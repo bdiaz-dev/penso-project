@@ -1,0 +1,131 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url = env("POSTGRES_PRISMA_URL")
+  directUrl = env("POSTGRES_URL_NON_POOLING")
+}
+
+model Users {
+  id Int @id @default(autoincrement())
+  userName String
+  nickName String? @unique
+  email String @unique
+  avatar String?
+  provider String
+  bio String? @db.VarChar(500)
+  posts Posts[]
+  comments Comments[]
+  pins Pins[]
+  likesToPosts LikesToPosts[]
+  likesToComments LikesToComments[]
+  reports Reports[]
+  followers Follows[] @relation("Followers")
+  following Follows[] @relation("Following")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Posts {
+  id Int @id @default(autoincrement())
+  user Users @relation(fields: [userId], references: [id])
+  userId Int
+  content String
+  hashtags PostHashtag[]
+  likes LikesToPosts[]
+  pins Pins[]
+  comments Comments[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Pins {
+  id Int @id @default(autoincrement())
+  user Users @relation(fields: [userId], references: [id])
+  userId Int
+  post Posts @relation(fields: [postId], references: [id])
+  postId Int
+  createdAt DateTime @default(now())
+}
+
+model LikesToPosts {
+  id Int @id @default(autoincrement())
+  userId Int
+  user Users @relation(fields: [userId], references: [id])
+  postId Int
+  post Posts @relation(fields: [postId], references: [id])
+  createdAt DateTime @default(now())
+}
+
+model Comments {
+  id Int @id @default(autoincrement())
+  post Posts @relation(fields: [postId], references: [id])
+  postId Int
+  user Users @relation(fields: [userId], references: [id])
+  userId Int
+  content String
+  likes LikesToComments[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model LikesToComments {
+  id Int @id @default(autoincrement())
+  user Users @relation(fields: [userId], references: [id])
+  userId Int
+  comment Comments @relation(fields: [commentId], references: [id])
+  commentId Int
+  createdAt DateTime @default(now())
+}
+
+model Follows {
+  id Int @id @default(autoincrement())
+  followerId Int
+  followingId Int
+  follower Users @relation("Followers", fields: [followerId], references: [id])
+  following Users @relation("Following", fields: [followingId], references: [id])
+  createdAt DateTime @default(now())
+
+  @@unique([followerId, followingId])
+}
+
+model Reports {
+  id Int @id @default(autoincrement())
+  userId Int
+  user Users @relation(fields: [userId], references: [id])
+  contentId Int
+  contentType ContentType
+  resolved Boolean @default(false)
+  createdAt DateTime @default(now())
+
+  @@index([contentId, contentType], name: "content_report_idx")
+}
+
+enum ContentType {
+  POST
+  COMMENT
+}
+
+model Hashtags {
+  id Int @id @default(autoincrement())
+  tag String
+  posts PostHashtag[]
+  createdAt DateTime @default(now())
+}
+
+model PostHashtag {
+  postId Int
+  post Posts @relation(fields: [postId], references: [id])
+  hashtagId Int
+  hashtag Hashtags @relation(fields: [hashtagId], references: [id])
+
+  @@id([postId, hashtagId])
+}
