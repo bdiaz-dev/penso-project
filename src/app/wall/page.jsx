@@ -1,7 +1,7 @@
 'use client'
 
-import { useState, useEffect, useRef, useCallback, Suspense } from 'react'
-import Image from 'next/image'
+import { useState, useEffect, useRef, useCallback } from 'react'
+// import Image from 'next/image'
 import Post from '@/components/posts/Post'
 
 export default function PostsFeed () {
@@ -18,8 +18,6 @@ export default function PostsFeed () {
     if (!data.posts) {
       setHasMore(false)
     } else {
-
-
       if (data?.posts?.length === 0) {
         setHasMore(false)
       } else {
@@ -31,7 +29,6 @@ export default function PostsFeed () {
         })
         setHasMore(data.hasMore)
       }
-
     }
     setLoading(false)
   }, [page])
@@ -41,13 +38,11 @@ export default function PostsFeed () {
   //     , [page]
   // })
 
-
   useEffect(() => {
     if (hasMore && !loading) {
       loadPosts()
     }
   }, [page])
-
 
   const lastPostRef = useCallback(
     (node) => {
@@ -60,7 +55,7 @@ export default function PostsFeed () {
 
       observer.current = new IntersectionObserver((entries) => {
         if (entries[0].isIntersecting) {
-          let newPage = (page + 1)
+          const newPage = (page + 1)
           setPage(newPage)
           // console.log('>>>>>>>>>>>>  pagina:', page)
         }
@@ -73,17 +68,16 @@ export default function PostsFeed () {
     [loading, hasMore]
   )
 
-
   return (
     <div className='mt-14'>
       {posts && posts.map((post, index) => {
-        const date = new Date(post.createdAt)
+        // const date = new Date(post.createdAt)
         // console.log(post.id)
         // const isLastElement = index === posts.length - 1
         return (
 
-          // <Suspense
-          // >
+        // <Suspense
+        // >
 
           <div
             ref={index === posts.length - 1 ? lastPostRef : null}
@@ -96,44 +90,44 @@ export default function PostsFeed () {
 
           </div>
 
-          // </Suspense>
-          // <div className='mx-20 mb-20' key={post.id} ref={index === posts.length - 1 ? lastPostRef : null}>
+        // </Suspense>
+        // <div className='mx-20 mb-20' key={post.id} ref={index === posts.length - 1 ? lastPostRef : null}>
 
-          //   <div className='flex flex-row justify-start items-center'>
-          //     <Image src={post.user.avatar} alt="user avatar" height={50} width={50} />
-          //     <h2>{post.user.userName}</h2>
-          //   </div>
+        //   <div className='flex flex-row justify-start items-center'>
+        //     <Image src={post.user.avatar} alt="user avatar" height={50} width={50} />
+        //     <h2>{post.user.userName}</h2>
+        //   </div>
 
-          //   <div>
-          //     {date.toLocaleDateString()}
-          //   </div>
+        //   <div>
+        //     {date.toLocaleDateString()}
+        //   </div>
 
-          //   <div className='bg-slate-400 rounded p-2'>
-          //     <p className='ml-5 mb-5'>{post.content}</p>
-          //   </div>
+        //   <div className='bg-slate-400 rounded p-2'>
+        //     <p className='ml-5 mb-5'>{post.content}</p>
+        //   </div>
 
-          //   <div className='ml-5 flex flex-row gap-2'>
-          //     {post.hashtags.map((h) => (
-          //       <div key={h.id} className='bg-slate-600 text-white rounded p-1'>
-          //         <b>
-          //           {h.hashtag.tag}
-          //         </b>
-          //       </div>
-          //     ))}
-          //   </div>
+        //   <div className='ml-5 flex flex-row gap-2'>
+        //     {post.hashtags.map((h) => (
+        //       <div key={h.id} className='bg-slate-600 text-white rounded p-1'>
+        //         <b>
+        //           {h.hashtag.tag}
+        //         </b>
+        //       </div>
+        //     ))}
+        //   </div>
 
-          //   <div>
-          //     <span>👍 </span>
-          //     {post.likes.length}
-          //   </div>
+        //   <div>
+        //     <span>👍 </span>
+        //     {post.likes.length}
+        //   </div>
 
-          //   <button className={`${post.isFollowing ? 'bg-green-400' : 'bg-blue-400'} p-2`}>
-          //     {
-          //       post.isFollowing ? 'Following' : 'Follow'
-          //     }
-          //   </button>
+        //   <button className={`${post.isFollowing ? 'bg-green-400' : 'bg-blue-400'} p-2`}>
+        //     {
+        //       post.isFollowing ? 'Following' : 'Follow'
+        //     }
+        //   </button>
 
-          // </div>
+        // </div>
         )
       })}
       {loading && <p>Loading...</p>}

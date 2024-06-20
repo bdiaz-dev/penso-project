@@ -13,7 +13,7 @@ export default function HashtagsForm ({ handleSetTags }) {
     if (!input) return
 
     setTimeout(() => {
-      fetch(`http://localhost:3000/api/hashtags/${input}`)
+      fetch(`/api/hashtags/${input}`)
         .then((res) => res.json())
         .then((data) => {
           if (data.some((e) => e.tag === input)) {
@@ -22,7 +22,7 @@ export default function HashtagsForm ({ handleSetTags }) {
             setList([{ id: null, tag: input, count: 'new' }, ...data])
           }
         })
-    }, 500)
+    }, 1000)
     return () => clearTimeout()
   }, [input])
 
@@ -45,7 +45,7 @@ export default function HashtagsForm ({ handleSetTags }) {
 
           {list.map((tag, index) => {
             if (tagsSelected.some((e) => e.tag === tag.tag)) {
-              return
+              return ([])
             } else {
               return (
                 <li className='bg-slate-600 p-2 rounded cursor-pointer' key={index} onClick={(e) => {

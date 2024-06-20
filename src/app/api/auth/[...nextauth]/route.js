@@ -5,6 +5,7 @@ import NextAuth from 'next-auth/next'
 import GoogleProvider from 'next-auth/providers/google'
 import GitHubProvider from 'next-auth/providers/github'
 import checkProvider from '@/libs/checkProvider'
+// import { getServerSession } from 'next-auth/next'
 
 const handler = NextAuth({
   providers: [

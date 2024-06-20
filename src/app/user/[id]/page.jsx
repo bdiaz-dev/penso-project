@@ -1,18 +1,35 @@
 // import { useParams } from 'next/navigation'
 
-import LikeButton from '@/components/buttons/LikeButton'
 import { prisma } from '@/libs/prisma'
 import Image from 'next/image'
+import { getServerSession } from 'next-auth'
+import searchId from '@/libs/searchId'
+import Post from '@/components/posts/Post'
+import Bio from './components/Bio'
 
 export default async function UserPage ({ params }) {
+  const session = await getServerSession()
+  const sessionId = await searchId(session?.user?.email)
   const { id } = params
+
+  console.log('##### sesionid', sessionId)
 
   const user = await prisma.users.findUnique({
     where: {
       id: Number(id)
     },
     include: {
-      posts: true
+      posts: {
+        include: {
+          hashtags: {
+            include: {
+              hashtag: true
+            }
+          },
+          _count: { select: { likes: true } },
+          likes: { where: { id: Number(id) } }
+        }
+      }
     }
   })
 
@@ -35,18 +52,10 @@ export default async function UserPage ({ params }) {
           {`${user.nickName}'s page`}
         </h1>
       </div>
-
-      {
-        user.bio &&
-        <div>
-          <h2>
-            Bio
-          </h2>
-          <div>
-            {user.bio}
-          </div>
-        </div>
-      }
+      <Bio
+        user={user}
+        canEdit={(Number(id) === Number(sessionId))}
+      />
 
       <div>
 
@@ -59,29 +68,31 @@ export default async function UserPage ({ params }) {
           {user.posts.map((post) => (
             <li
               key={post.id}
-
+              className=' rounded p-2 mx-2 mb-4 flex flex-col justify-center'
             >
-              <b
-                className='mx-2'
-              >
-                {post.createdAt.toLocaleDateString()}
-              </b>
-              <div
-                className='bg-slate-600 rounded p-2 m-2'
-              >
-                {post.content}
-              </div>
-              <LikeButton
-                table={'likestoposts'}
-                id={post.id}
+              <Post
+                post={post}
+                noAvatar
+                isUserPost={(Number(id) === Number(sessionId))}
               />
+              {/* <div>
+                {
+                  (Number(id) === Number(sessionId))
+                    ? <div
+                    className='mx-2 flex gap-5'>
+                      <b>Edit</b>
+                      <b>Delete</b>
+                    </div>
+                    : <></>
+                }
+              </div> */}
             </li>
           ))}
         </ul>
       </div>
 
       <h3>
-        {params.id}
+        {id}
       </h3>
     </article>
   )

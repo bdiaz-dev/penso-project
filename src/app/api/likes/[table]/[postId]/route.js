@@ -1,46 +1,47 @@
 import { NextResponse } from 'next/server'
 import { prisma } from '@/libs/prisma'
-import searchId from '@/libs/searchId'
-// import { getToken } from 'next-auth/jwt'
+// import searchId from '@/libs/searchId'
+import { getToken } from 'next-auth/jwt'
 import { getServerSession } from 'next-auth'
 import { pusher } from '@/libs/pusher'
 
 export async function GET (req, { params }) {
+  // console.log('##### token', token.id)
   try {
+    const token = await getToken({ req })
     const session = await getServerSession()
     if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
     const { postId, table } = params
 
     const likesCount = table === 'likestoposts'
-
       ? (await prisma.likesToPosts.count({
-        where: {
-          postId: Number(postId)
-        }
-      }))
+          where: {
+            postId: Number(postId)
+          }
+        }))
 
       : (await prisma.likesToComments.count({
-        where: {
-          postId: Number(postId)
-        }
-      }))
+          where: {
+            postId: Number(postId)
+          }
+        }))
 
     const isLikedByUser = table === 'likestoposts'
 
       ? (await prisma.likesToPosts.findMany({
-        where: {
-          postId: Number(postId),
-          userId: Number(await searchId(session.user.email))
-        }
-      }))
+          where: {
+            postId: Number(postId),
+            userId: Number(token.id)
+          }
+        }))
 
       : (await prisma.likesToComments.findMany({
-        where: {
-          postId: Number(postId),
-          userId: Number(await searchId(session.user.email))
-        }
-      }))
+          where: {
+            postId: Number(postId),
+            userId: Number(token.id)
+          }
+        }))
 
     return NextResponse.json({ count: likesCount, isLiked: (isLikedByUser.length > 0) })
   } catch (error) {
@@ -50,19 +51,20 @@ export async function GET (req, { params }) {
 }
 
 export async function POST (req, { params }) {
-  const session = await getServerSession()
+  // const session = await getServerSession()
   try {
-    if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    const sessionId = await searchId(session.user.email)
+    const token = await getToken({ req })
+    if (!token) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    // const sessionId = Number(token.id)
 
-    const body = await req.json()
+    // const body = await req.json()
     // console.log(body)
 
-    const userId = await searchId(body.userEmail)
+    // const userId = await searchId(body.userEmail)
 
-    if (sessionId !== userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    // if (sessionId !== userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
-    console.log('>>  all right')
+    // console.log('>>  all right')
 
     const { postId, table } = params
 
@@ -71,7 +73,7 @@ export async function POST (req, { params }) {
     const res = (await prisma[tableInCamelCase].create({
       data: {
         postId: Number(postId),
-        userId: Number(userId)
+        userId: Number(token.id)
       }
     }))
 
@@ -92,19 +94,20 @@ export async function POST (req, { params }) {
 }
 
 export async function DELETE (req, { params }) {
-  const session = await getServerSession()
+  // const session = await getServerSession()
   try {
-    if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    const sessionId = await searchId(session.user.email)
+    const token = await getToken({ req })
+    if (!token) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    // const sessionId = await searchId(session.user.email)
 
-    const body = await req.json()
+    // const body = await req.json()
     // console.log(body)
 
-    const userId = await searchId(body.userEmail)
+    // const userId = await searchId(body.userEmail)
 
-    if (sessionId !== userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    // if (sessionId !== userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
-    console.log('>>  all right')
+    // console.log('>>  all right')
 
     const { postId, table } = params
 
@@ -113,7 +116,7 @@ export async function DELETE (req, { params }) {
     const likeId = await prisma[tableInCamelCase].findFirst({
       where: {
         postId: Number(postId),
-        userId: Number(userId)
+        userId: Number(token.id)
       },
       select: {
         id: true
@@ -127,6 +130,7 @@ export async function DELETE (req, { params }) {
         id: Number(likeId.id)
       }
     })
+    console.log('deleted ', res.id)
 
     const likesCount = await prisma[tableInCamelCase].count({
       where: { postId: Number(postId) }

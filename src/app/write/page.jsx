@@ -18,7 +18,6 @@ export default function WritePage () {
     setTags(tagsList)
   }
 
-
   useEffect(() => {
     if (!res) { setPostingText(<p className='font-bold text-2xl p-4'>Creating post...</p>) }
     if (res?.error) {
@@ -64,11 +63,12 @@ export default function WritePage () {
           </div>
         </div>
       )
+      session.hasPosted = true
+      console.log(session)
     }
   }, [res])
 
   const handleSubmit = (event) => {
-
     event.preventDefault()
 
     if (text === '') return

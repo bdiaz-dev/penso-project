@@ -5,23 +5,22 @@ import Link from 'next/link'
 import { signIn, useSession, signOut } from 'next-auth/react'
 import searchId from '@/libs/searchId'
 import { useEffect, useState } from 'react'
+// import pusherJs from 'pusher-js'
+import { getPusherJsInstance } from '@/libs/pusher'
 
 export default function NavBar () {
   const { data: session } = useSession()
-
+  const [userId, setUserId] = useState(null)
   const [postedToday, setPostedToday] = useState(false)
-
-  // if (session) {
-  //   session.user.id = '0101'
-  // }
-
-  // console.log(session)
 
   useEffect(() => {
     if (!session) return
     const fetchPostedStatus = async () => {
-      const { email } = await session?.user
-      const userId = await searchId(email)
+      if (!userId) {
+        const { email } = await session?.user
+        const userId = await searchId(email)
+        setUserId(userId)
+      }
       await fetch(`/api/posts/isPostedToday/${userId}`)
         .then((res) => res.json())
         .then((bool) => {
@@ -29,7 +28,32 @@ export default function NavBar () {
         })
     }
     fetchPostedStatus()
-  }, [session])
+  }, [session, userId])
+
+  useEffect(() => {
+    // eslint-disable-next-line new-cap
+    // const pusher = new pusherJs(process.env.NEXT_PUBLIC_PUSHER_KEY, {
+    //   cluster: process.env.NEXT_PUBLIC_PUSHER_CLUSTER
+    // })
+
+    const pusher = getPusherJsInstance()
+
+    const channel = pusher.subscribe('posts-channel')
+
+    const updatePostedToday = (data) => {
+      if (data.userId === Number(userId)) {
+        setPostedToday(true)
+      }
+      // ->> TODO posible notification of follows new post !!
+    }
+
+    channel.bind('today-has-posted', (data) => updatePostedToday(data))
+
+    return () => {
+      channel.unbind_all()
+      channel.unsubscribe()
+    }
+  }, [userId])
 
   return (
     <nav className='sticky top-0 z-50'>
@@ -48,7 +72,7 @@ export default function NavBar () {
 
         {/* --- Write Button --- */}
         {
-          session &&
+          userId &&
           <li
           >
             {
@@ -76,7 +100,7 @@ export default function NavBar () {
 
                 <div className='flex gap-2 items-center cursor-pointer'>
                   <Link
-                    href={'/dashboard'}
+                    href={`/user/${userId}`}
                   >
                     {session.user.name}
                   </Link>

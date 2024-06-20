@@ -2,12 +2,15 @@
 import { getToken } from 'next-auth/jwt'
 import { prisma } from '@/libs/prisma'
 import { NextResponse } from 'next/server'
-import searchId from '@/libs/searchId'
-import { getServerSession } from 'next-auth/next'
+// import searchId from '@/libs/searchId'
+// import { getServerSession } from 'next-auth/next'
+import { pusher } from '@/libs/pusher'
+// import { getToken } from 'next-auth/jwt'
 
 const secret = process.env.NEXTAUTH_SECRET
 
 export async function POST (req) {
+  // const session = await getServerSession()
   const token = await getToken({ req, secret })
 
   if (!token) {
@@ -92,23 +95,29 @@ export async function POST (req) {
     }
 
     newPost.message = ['Great!', 'Your diary post has been published', 'This is your day 2 writing non-stop']
+    pusher.trigger('posts-channel', 'today-has-posted', {
+      postId: Number(newPost.id),
+      userId: Number(requestBodyUserId)
+    })
+    // session.hasPosted = true
     return NextResponse.json(newPost, { status: 201 })
   } catch (error) {
     return NextResponse.json(error.message, { status: 500 })
   }
 }
 
-export async function GET (request) {
+export async function GET (req) {
   try {
-    const session = await getServerSession()
-    const userId = Number(await searchId(session.user.email))
-    console.log('userId on posts route: ', userId)
+    const token = await getToken({ req })
+    // const session = await getServerSession()
+    const userId = Number(token.id)
+    // console.log('userId on posts route: ', userId)
 
     if (!userId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const { searchParams } = new URL(request.url)
+    const { searchParams } = new URL(req.url)
     const page = parseInt(searchParams.get('page')) || 1
     const limit = parseInt(searchParams.get('limit')) || 10
     const offset = (page - 1) * limit
@@ -132,7 +141,8 @@ export async function GET (request) {
             hashtag: true
           }
         },
-        likes: true
+        _count: { select: { likes: true } },
+        likes: { where: { userId } }
       },
       skip: offset,
       take: limit,
@@ -155,7 +165,8 @@ export async function GET (request) {
 
           }
         },
-        likes: true
+        _count: { select: { likes: true } },
+        likes: { where: { userId } }
       },
       skip: offset,
       take: limit,
@@ -176,6 +187,10 @@ export async function GET (request) {
 
     const combinedPosts = [...formattedFollowingPosts, ...formattedOtherPosts].slice(0, limit)
     const hasMore = combinedPosts.length === limit
+
+    // const combinedPostsWithLikesInfo = combinedPosts.map(post => {
+    //   const likesCount = post._count.likes;
+    //   const isLikedByUser = post.likes.length > 0})
 
     // console.log(combinedPosts)
 

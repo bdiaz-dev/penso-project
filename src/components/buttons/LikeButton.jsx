@@ -3,18 +3,23 @@
 
 import { useCallback, useEffect, useState } from 'react'
 import { useSession } from 'next-auth/react'
-import pusherJs from 'pusher-js'
+// import pusherJs from 'pusher-js'
+import { getPusherJsInstance } from '@/libs/pusher'
 
-export default function LikeButton ({ table, id }) {
+export default function LikeButton ({ table, id, isLikedBool, likesCount }) {
   const session = useSession()
+  // console.log('isLikeBool: ', isLikedBool)
+  // console.log('likesCount: ', likesCount)
   // console.log(session)
-  const userEmail = session.data.user.email
+  const userEmail = session?.data?.user?.email
+  // console.log('sesion en likebutton', userEmail)
 
   const [loading, setLoading] = useState(false)
-  const [count, setCount] = useState(0)
-  const [isLiked, setIsLiked] = useState(false)
+  const [count, setCount] = useState(likesCount)
+  const [isLiked, setIsLiked] = useState(isLikedBool)
 
   const getLikes = useCallback(async (table, id) => {
+    // console.log('sesion en likebutton', session)
     if (!table || !id) return
     if (loading) return
 
@@ -35,15 +40,17 @@ export default function LikeButton ({ table, id }) {
     setLoading(false)
   }, [])
 
-  useEffect(() => {
-    getLikes(table, id)
-  }, [getLikes, table, id])
+  // useEffect(() => {
+  //   getLikes(table, id)
+  // }, [getLikes, table, id])
 
   useEffect(() => {
     // eslint-disable-next-line new-cap
-    const pusher = new pusherJs(process.env.NEXT_PUBLIC_PUSHER_KEY, {
-      cluster: process.env.NEXT_PUBLIC_PUSHER_CLUSTER
-    })
+    // const pusher = new pusherJs(process.env.NEXT_PUBLIC_PUSHER_KEY, {
+    //  cluster: process.env.NEXT_PUBLIC_PUSHER_CLUSTER
+    // })
+
+    const pusher = getPusherJsInstance()
 
     const channel = pusher.subscribe(`${table}-likes-channel`)
 
@@ -86,15 +93,15 @@ export default function LikeButton ({ table, id }) {
     handleLike(table, id, (isLiked ? 'DELETE' : 'POST'))
   }
 
-  useEffect(() => {
-    getLikes(table, id)
+  // useEffect(() => {
+  //   getLikes(table, id)
 
-    // const interval = setInterval(() => {
-    //   getLikes(table, id)
-    // }, 10000)
+  //   // const interval = setInterval(() => {
+  //   //   getLikes(table, id)
+  //   // }, 10000)
 
-    // return () => clearInterval(interval)
-  }, [getLikes, table, id])
+  //   // return () => clearInterval(interval)
+  // }, [getLikes, table, id])
 
   const normalButton = <button
     className={isLiked ? 'bg-green-600 p-2 rounded mt-4' : 'bg-blue-600 p-2 rounded mt-4'}
