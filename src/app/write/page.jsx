@@ -6,7 +6,7 @@ import HashtagsForm from './components/HashtagsForm'
 import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 
-export default function WritePage () {
+export default function WritePage ({ post }) {
   const router = useRouter()
   const { data: session } = useSession()
   const [tags, setTags] = useState([])
@@ -17,6 +17,13 @@ export default function WritePage () {
   const handleSetTags = (tagsList) => {
     setTags(tagsList)
   }
+
+  useEffect(() => {
+    if (post) {
+      setText(post.content)
+      setTags([...post.hashtags])
+    }
+  }, [])
 
   useEffect(() => {
     if (!res) { setPostingText(<p className='font-bold text-2xl p-4'>Creating post...</p>) }
@@ -77,6 +84,7 @@ export default function WritePage () {
 
     const userId = session.user.id
     const userEmail = session.user.email
+
     console.log('user is: ', session.user)
 
     if (!session) {
@@ -84,16 +92,32 @@ export default function WritePage () {
       return
     }
 
-    fetch('/api/posts', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ userId, text, tags, userEmail })
-    })
-      .then(response => response.json())
-      .then((data) => {
-        console.log(data)
-        setRes(data)
+    if (post) {
+      const postId = post.id
+      const tagsForDelete = []
+
+      fetch('/api/posts', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ postId, userId, text, tags, userEmail, tagsForDelete })
       })
+        .then(response => response.json())
+        .then((data) => {
+          console.log(data)
+          setRes(data)
+        })
+    } else {
+      fetch('/api/posts', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId, text, tags, userEmail })
+      })
+        .then(response => response.json())
+        .then((data) => {
+          console.log(data)
+          setRes(data)
+        })
+    }
   }
 
   return (

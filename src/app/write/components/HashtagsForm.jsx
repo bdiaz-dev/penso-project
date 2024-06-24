@@ -1,29 +1,34 @@
 'use client'
 
-import { useState, useEffect, Suspense } from 'react'
+import { useState, useEffect } from 'react'
+import { debounce } from 'lodash'
 
-export default function HashtagsForm ({ handleSetTags }) {
-
+export default function HashtagsForm ({ handleSetTags, initialTagsList }) {
   const [input, setInput] = useState('')
   const [list, setList] = useState([])
-  const [tagsSelected, setTagsSelected] = useState([])
+  const [tagsSelected, setTagsSelected] = useState(initialTagsList || [])
 
   useEffect(() => {
+    // console.log(initialTagsList)
     setList([])
     if (!input) return
-
-    setTimeout(() => {
-      fetch(`/api/hashtags/${input}`)
+    const fetchHashtags = debounce((inputValue) => {
+      fetch(`/api/hashtags/${inputValue}`)
         .then((res) => res.json())
         .then((data) => {
-          if (data.some((e) => e.tag === input)) {
+          if (data.some((e) => e.tag === inputValue)) {
             setList(data)
           } else {
-            setList([{ id: null, tag: input, count: 'new' }, ...data])
+            setList([{ id: null, tag: inputValue, count: 'new' }, ...data])
           }
         })
-    }, 1000)
-    return () => clearTimeout()
+    }, 500)
+
+    fetchHashtags(input)
+
+    return () => {
+      fetchHashtags.cancel()
+    }
   }, [input])
 
   const handleDeleteTags = (i) => {
@@ -63,7 +68,6 @@ export default function HashtagsForm ({ handleSetTags }) {
 
         </ul>
 
-
         <hr />
 
         <h2 className='text-white'>
@@ -85,8 +89,6 @@ export default function HashtagsForm ({ handleSetTags }) {
             ))
           }
         </ul>
-
-
 
       </div>
     </div >
