@@ -1,37 +1,48 @@
-// import { useParams } from 'next/navigation'
-
 import { prisma } from '@/libs/prisma'
 import Image from 'next/image'
 import { getServerSession } from 'next-auth'
-import searchId from '@/libs/searchId'
 import Post from '@/components/posts/Post'
 import Bio from './components/Bio'
+import FollowButton from '@/components/FollowButton'
+import searchId from '@/libs/searchId'
 
 export default async function UserPage ({ params }) {
   const session = await getServerSession()
-  const sessionId = await searchId(session?.user?.email)
-  const { id } = params
+  const { nick } = params
 
-  console.log('##### sesionid', sessionId)
-
-  const user = await prisma.users.findUnique({
+  const user = await prisma.users.findFirst({
     where: {
-      id: Number(id)
-    },
-    include: {
-      posts: {
-        include: {
-          hashtags: {
-            include: {
-              hashtag: true
-            }
-          },
-          _count: { select: { likes: true } },
-          likes: { where: { id: Number(id) } }
-        }
+      nickName: {
+        equals: nick,
+        mode: 'insensitive'
       }
     }
   })
+
+  if (user) {
+    const posts = await prisma.posts.findMany({
+      where: {
+        userId: user.id
+      },
+      include: {
+        hashtags: {
+          include: {
+            hashtag: true
+          }
+        },
+        _count: { select: { likes: true } },
+        likes: { where: { user } }
+      },
+      orderBy: {
+        createdAt: 'desc'
+      }
+    })
+
+    user.posts = posts
+  }
+
+  const isUserPage = user.email === session.user.email
+  const userId = await searchId(session.user.email)
 
   return (
     <article>
@@ -52,9 +63,16 @@ export default async function UserPage ({ params }) {
           {`${user.nickName}'s page`}
         </h1>
       </div>
+
+      {
+        user.email !== session.user.email &&
+        <div className='flex justify-center items-center'>
+          <FollowButton userId={userId} toFollowId={user.id} />
+        </div>}
+
       <Bio
         user={user}
-        canEdit={(Number(id) === Number(sessionId))}
+        canEdit={isUserPage}
       />
 
       <div>
@@ -73,26 +91,15 @@ export default async function UserPage ({ params }) {
               <Post
                 post={post}
                 noAvatar
-                isUserPost={(Number(id) === Number(sessionId))}
+                isUserPost={isUserPage}
               />
-              {/* <div>
-                {
-                  (Number(id) === Number(sessionId))
-                    ? <div
-                    className='mx-2 flex gap-5'>
-                      <b>Edit</b>
-                      <b>Delete</b>
-                    </div>
-                    : <></>
-                }
-              </div> */}
             </li>
           ))}
         </ul>
       </div>
 
       <h3>
-        {id}
+        {nick}
       </h3>
     </article>
   )

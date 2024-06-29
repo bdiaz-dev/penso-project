@@ -9,102 +9,109 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
-  url = env("POSTGRES_PRISMA_URL")
+  provider  = "postgresql"
+  url       = env("POSTGRES_PRISMA_URL")
   directUrl = env("POSTGRES_URL_NON_POOLING")
 }
 
 model Users {
-  id Int @id @default(autoincrement())
-  userName String
-  nickName String? @unique
-  email String @unique
-  avatar String?
-  provider String
-  bio String? @db.VarChar(500)
-  posts Posts[]
-  comments Comments[]
-  pins Pins[]
-  likesToPosts LikesToPosts[]
+  id              Int               @id @default(autoincrement())
+  userName        String
+  nickName        String?           @unique
+  email           String            @unique
+  avatar          String?
+  provider        String
+  bio             String?           @db.VarChar(500)
+  posts           Posts[]
+  comments        Comments[]
+  pins            Pins[]
+  likesToPosts    LikesToPosts[]
   likesToComments LikesToComments[]
-  reports Reports[]
-  followers Follows[] @relation("Followers")
-  following Follows[] @relation("Following")
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  reports         Reports[]
+  followers       Follows[]         @relation("Followers")
+  following       Follows[]         @relation("Following")
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+  Notifications   Notifications[]
+  actions         Notifications[]   @relation("ActorNotifications")
 }
 
 model Posts {
-  id Int @id @default(autoincrement())
-  user Users @relation(fields: [userId], references: [id])
-  userId Int
-  content String
-  hashtags PostHashtag[]
-  likes LikesToPosts[]
-  pins Pins[]
-  comments Comments[]
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id            Int             @id @default(autoincrement())
+  user          Users           @relation(fields: [userId], references: [id])
+  userId        Int
+  content       String
+  hashtags      PostHashtag[]
+  likes         LikesToPosts[]
+  pins          Pins[]
+  comments      Comments[]
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+  notifications Notifications[]
 }
 
 model Pins {
-  id Int @id @default(autoincrement())
-  user Users @relation(fields: [userId], references: [id])
-  userId Int
-  post Posts @relation(fields: [postId], references: [id])
-  postId Int
+  id        Int      @id @default(autoincrement())
+  user      Users    @relation(fields: [userId], references: [id])
+  userId    Int
+  post      Posts    @relation(fields: [postId], references: [id])
+  postId    Int
   createdAt DateTime @default(now())
 }
 
 model LikesToPosts {
-  id Int @id @default(autoincrement())
-  userId Int
-  user Users @relation(fields: [userId], references: [id])
-  postId Int
-  post Posts @relation(fields: [postId], references: [id])
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  user      Users    @relation(fields: [userId], references: [id])
+  postId    Int
+  post      Posts    @relation(fields: [postId], references: [id])
   createdAt DateTime @default(now())
+  notifications Notifications[]
 }
 
 model Comments {
-  id Int @id @default(autoincrement())
-  post Posts @relation(fields: [postId], references: [id])
-  postId Int
-  user Users @relation(fields: [userId], references: [id])
-  userId Int
-  content String
-  likes LikesToComments[]
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id            Int               @id @default(autoincrement())
+  post          Posts             @relation(fields: [postId], references: [id])
+  postId        Int
+  user          Users             @relation(fields: [userId], references: [id])
+  userId        Int
+  content       String
+  likes         LikesToComments[]
+  createdAt     DateTime          @default(now())
+  updatedAt     DateTime          @updatedAt
+  notifications Notifications[]
 }
 
 model LikesToComments {
-  id Int @id @default(autoincrement())
-  user Users @relation(fields: [userId], references: [id])
-  userId Int
-  comment Comments @relation(fields: [commentId], references: [id])
+  id        Int      @id @default(autoincrement())
+  user      Users    @relation(fields: [userId], references: [id])
+  userId    Int
+  comment   Comments @relation(fields: [commentId], references: [id])
   commentId Int
   createdAt DateTime @default(now())
+  notifications Notifications[]
 }
 
 model Follows {
-  id Int @id @default(autoincrement())
-  followerId Int
-  followingId Int
-  follower Users @relation("Followers", fields: [followerId], references: [id])
-  following Users @relation("Following", fields: [followingId], references: [id])
-  createdAt DateTime @default(now())
+  id            Int             @id @default(autoincrement())
+  followerId    Int
+  followingId   Int
+  follower      Users           @relation("Followers", fields: [followerId], references: [id])
+  following     Users           @relation("Following", fields: [followingId], references: [id])
+  createdAt     DateTime        @default(now())
+  Notifications Notifications[]
 
   @@unique([followerId, followingId])
 }
 
 model Reports {
-  id Int @id @default(autoincrement())
-  userId Int
-  user Users @relation(fields: [userId], references: [id])
-  contentId Int
+  id          Int         @id @default(autoincrement())
+  userId      Int
+  user        Users       @relation(fields: [userId], references: [id])
+  contentId   Int
   contentType ContentType
-  resolved Boolean @default(false)
-  createdAt DateTime @default(now())
+  resolved    Boolean     @default(false)
+  createdAt   DateTime    @default(now())
 
   @@index([contentId, contentType], name: "content_report_idx")
 }
@@ -115,17 +122,60 @@ enum ContentType {
 }
 
 model Hashtags {
-  id Int @id @default(autoincrement())
-  tag String
-  posts PostHashtag[]
-  createdAt DateTime @default(now())
+  id        Int           @id @default(autoincrement())
+  tag       String
+  posts     PostHashtag[]
+  createdAt DateTime      @default(now())
 }
 
 model PostHashtag {
-  postId Int
-  post Posts @relation(fields: [postId], references: [id])
+  postId    Int
+  post      Posts    @relation(fields: [postId], references: [id])
   hashtagId Int
-  hashtag Hashtags @relation(fields: [hashtagId], references: [id])
+  hashtag   Hashtags @relation(fields: [hashtagId], references: [id])
 
   @@id([postId, hashtagId])
+}
+
+// model Notifications {
+//   id Int @id @default(autoincrement())
+//   user Users @relation(fields: [userId], references: [id])
+//   userId Int
+
+// }
+
+model Notifications {
+  id        Int              @id @default(autoincrement())
+  type      NotificationType
+  // read      Boolean          @default(false)
+  createdAt DateTime         @default(now())
+
+  userId Int
+  user   Users @relation(fields: [userId], references: [id])
+  
+  actorId   Int
+  actor     Users @relation("ActorNotifications", fields: [actorId], references: [id])
+
+  postId Int?
+  post   Posts? @relation(fields: [postId], references: [id], onDelete: SetNull)
+
+  commentId Int?
+  comment   Comments? @relation(fields: [commentId], references: [id], onDelete: SetNull)
+
+  followId  Int?
+  follow   Follows? @relation(fields: [followId], references: [id], onDelete: SetNull)
+  
+  likeToPostId  Int?
+  likeToPost   LikesToPosts? @relation(fields: [likeToPostId], references: [id], onDelete: SetNull)
+  
+  likeToCommentId  Int?
+  likeToComment  LikesToComments? @relation(fields: [likeToCommentId], references: [id], onDelete: SetNull)
+}
+
+enum NotificationType {
+  FOLLOW
+  LIKE_POST
+  LIKE_COMMENT
+  NEW_POST
+  NEW_COMMENT
 }

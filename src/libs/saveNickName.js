@@ -1,13 +1,11 @@
 export default function SaveNickName (id, nickName) {
-
-
   console.log(id, nickName)
   fetch('/api/users/saveNickName', {
-    method: 'PUT', // Especifica el método como PUT
+    method: 'PUT',
     headers: {
-      'Content-Type': 'application/json',
+      'Content-Type': 'application/json'
     },
-    body: JSON.stringify({ id: id, nickName: nickName }),
+    body: JSON.stringify({ id, nickName })
   })
     .then(response => {
       if (!response.ok) {
@@ -21,6 +19,4 @@ export default function SaveNickName (id, nickName) {
     .catch(error => {
       console.error('There was an error with the request:', error)
     })
-
-
 }

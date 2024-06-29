@@ -5,13 +5,15 @@ import Link from 'next/link'
 import { signIn, useSession, signOut } from 'next-auth/react'
 import searchId from '@/libs/searchId'
 import { useEffect, useState } from 'react'
-// import pusherJs from 'pusher-js'
 import { getPusherJsInstance } from '@/libs/pusher'
+import getNick from '@/libs/getNick'
+import NotificationBell from './NotificationBell'
 
 export default function NavBar () {
   const { data: session } = useSession()
   const [userId, setUserId] = useState(null)
   const [postedToday, setPostedToday] = useState(false)
+  const [nick, setNick] = useState(null)
 
   useEffect(() => {
     if (!session) return
@@ -19,22 +21,21 @@ export default function NavBar () {
       if (!userId) {
         const { email } = await session?.user
         const userId = await searchId(email)
+        const nick = await getNick(userId)
         setUserId(userId)
+        setNick(nick)
+        await fetch(`/api/posts/isPostedToday/${userId}`)
+          .then((res) => res.json())
+          .then((bool) => {
+            setPostedToday(bool)
+          })
       }
-      await fetch(`/api/posts/isPostedToday/${userId}`)
-        .then((res) => res.json())
-        .then((bool) => {
-          setPostedToday(bool)
-        })
     }
     fetchPostedStatus()
   }, [session, userId])
 
   useEffect(() => {
     // eslint-disable-next-line new-cap
-    // const pusher = new pusherJs(process.env.NEXT_PUBLIC_PUSHER_KEY, {
-    //   cluster: process.env.NEXT_PUBLIC_PUSHER_CLUSTER
-    // })
 
     const pusher = getPusherJsInstance()
 
@@ -44,7 +45,6 @@ export default function NavBar () {
       if (data.userId === Number(userId)) {
         setPostedToday(true)
       }
-      // ->> TODO posible notification of follows new post !!
     }
 
     channel.bind('today-has-posted', (data) => updatePostedToday(data))
@@ -100,9 +100,9 @@ export default function NavBar () {
 
                 <div className='flex gap-2 items-center cursor-pointer'>
                   <Link
-                    href={`/user/${userId}`}
+                    href={`/user/${nick}`}
                   >
-                    {session.user.name}
+                    {nick}
                   </Link>
 
                   <img
@@ -110,6 +110,8 @@ export default function NavBar () {
                     src={session.user.image}
                     alt='user_avatar'
                   />
+
+                  <NotificationBell userId={userId} />
 
                   <button
                     onClick={async () => {

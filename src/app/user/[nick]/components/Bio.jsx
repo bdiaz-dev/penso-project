@@ -5,7 +5,7 @@ import { useState } from 'react'
 export default function Bio ({ user, canEdit }) {
   // console.log(user.bio)
   const [bio, setBio] = useState(user.bio)
-  const [formValue, setFormValue] = useState(user.bio)
+  const [formValue, setFormValue] = useState(user.bio || '')
   const [isEditing, setIsEditing] = useState(false)
   const handleSave = (e) => {
     e.preventDefault()
