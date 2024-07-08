@@ -10,12 +10,19 @@ export default async function UserPage ({ params }) {
   const session = await getServerSession()
   const { nick } = params
 
-  const user = await prisma.users.findFirst({
+  const profile = await prisma.users.findFirst({
     where: {
       nickName: {
         equals: nick,
         mode: 'insensitive'
       }
+    },
+    select: {
+      id: true,
+      avatar: true,
+      nickName: true,
+      bio: true,
+      email: true
     }
   })
 
@@ -48,7 +55,7 @@ export default async function UserPage ({ params }) {
   //   user.posts = posts
   // }
 
-  const isUserPage = user.email === session.user.email
+  const isUserPage = profile.email === session.user.email
   const userId = await searchId(session.user.email)
 
   return (
@@ -61,24 +68,24 @@ export default async function UserPage ({ params }) {
           alt={'user\'s avatar'}
           width={150}
           height={150}
-          src={user.avatar}
+          src={profile.avatar}
           className='justify-center items-center'
         />
         <h1
           className='font-bold text-3xl mx-2'
         >
-          {`${user.nickName}'s page`}
+          {`${profile.nickName}'s page`}
         </h1>
       </div>
 
       {
-        user.email !== session.user.email &&
+        profile.email !== session.user.email &&
         <div className='flex justify-center items-center'>
-          <FollowButton userId={userId} toFollowId={user.id} />
+          <FollowButton userId={userId} toFollowId={profile.id} />
         </div>}
 
       <Bio
-        user={user}
+        user={profile}
         canEdit={isUserPage}
       />
 
@@ -89,7 +96,7 @@ export default async function UserPage ({ params }) {
         >
           Posts
         </h2>
-        <ProfilePosts userId={userId} />
+        <ProfilePosts userId={profile.id} />
       </div>
 
       <h3>

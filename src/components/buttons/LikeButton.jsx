@@ -5,7 +5,7 @@ import { useCallback, useEffect, useState } from 'react'
 import { useSession } from 'next-auth/react'
 import { getPusherJsInstance } from '@/libs/pusher'
 
-export default function LikeButton ({ table, id, isLikedBool, likesCount }) {
+export default function LikeButton ({ table, id, isLikedBool = null, likesCount = null }) {
   const session = useSession()
   const userEmail = session?.data?.user?.email
 
@@ -16,7 +16,6 @@ export default function LikeButton ({ table, id, isLikedBool, likesCount }) {
   const getLikes = useCallback(async (table, id) => {
     console.log(table, id)
     if (!table || !id) return
-    console.log('passing')
     if (loading) return
 
     try {
@@ -24,7 +23,6 @@ export default function LikeButton ({ table, id, isLikedBool, likesCount }) {
 
       const res = await fetch(`/api/likes/${table}/${id}`)
       const data = await res.json()
-      console.log(data)
 
       // console.log(data)
 
@@ -38,6 +36,7 @@ export default function LikeButton ({ table, id, isLikedBool, likesCount }) {
   }, [])
 
   useEffect(() => {
+    if (likesCount !== null) return
     getLikes(table, id)
   }, [])
 

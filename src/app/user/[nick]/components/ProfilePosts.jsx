@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
 import Post from '@/components/posts/Post'
 import { useRouter } from 'next/navigation'
+import { useSession } from 'next-auth/react'
 
 export default function ProfilePosts ({ userId }) {
   const [posts, setPosts] = useState([])
@@ -11,6 +12,8 @@ export default function ProfilePosts ({ userId }) {
   const [hasMore, setHasMore] = useState(true)
   const observer = useRef()
   const router = useRouter()
+  const { data: session } = useSession()
+  const isUserPost = userId === session?.user.id
 
   const searchByTag = (tag) => {
     router.push(`/wall/searchByTag/${tag}`)
@@ -76,6 +79,8 @@ export default function ProfilePosts ({ userId }) {
             <Post
               post={post}
               handleClickTag={searchByTag}
+              isProfilePost
+              isUserPost={isUserPost}
             />
 
           </div>

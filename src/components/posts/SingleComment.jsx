@@ -19,6 +19,7 @@ export default function Comment ({ userId, comment }) {
   const date = new Date(comment.createdAt)
   // const updatedDate = new Date(comment.updatedAt)
   // const router = useRouter()
+  // console.log(comment)
 
   const handleDelete = useCallback(async () => {
     const userConfirm = confirm('Are you sure to delete this comment?')

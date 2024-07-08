@@ -3,8 +3,8 @@
 import { askFollow, deleteFollow, newFollow } from '@/libs/handleFollow'
 import { useCallback, useEffect, useState } from 'react'
 
-export default function FollowButton ({ userId, toFollowId }) {
-  const [isFollowed, setIsFollowed] = useState(false)
+export default function FollowButton ({ userId, toFollowId, initialIsFollowing = null }) {
+  const [isFollowed, setIsFollowed] = useState(initialIsFollowing || false)
 
   const settingFollow = useCallback(async () => {
     if (!userId) return
@@ -34,8 +34,9 @@ export default function FollowButton ({ userId, toFollowId }) {
   }
 
   useEffect(() => {
+    if (initialIsFollowing !== null) return
     settingFollow()
-  }, [settingFollow])
+  }, [initialIsFollowing, settingFollow])
 
   return (
     <div>

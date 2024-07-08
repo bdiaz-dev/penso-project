@@ -37,7 +37,18 @@ export async function GET (req) {
         comments: {
           take: 2,
           include: {
-            user: true
+            user: {
+              select: {
+                avatar: true,
+                nickName: true,
+                email: true,
+                id: true
+              }
+            },
+            _count: {
+              select: { likes: true }
+            },
+            likes: { where: { userId: Number(userId) } }
           }
         },
         _count: {

@@ -34,6 +34,8 @@ model Users {
   updatedAt       DateTime          @updatedAt
   Notifications   Notifications[]
   actions         Notifications[]   @relation("ActorNotifications")
+  lastPostDate    DateTime?
+  streakCount     Int?               @default(0)
 }
 
 model Posts {

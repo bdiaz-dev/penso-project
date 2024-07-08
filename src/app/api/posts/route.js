@@ -94,7 +94,40 @@ export async function POST (req) {
       })
     }
 
-    newPost.message = ['Great!', 'Your diary post has been published', 'This is your day 2 writing non-stop']
+    const user = await prisma.users.findUnique({
+      where: {
+        id: Number(requestBodyUserId)
+      }
+    })
+
+    const lastPostDate = user.lastPostDate ? new Date(user.lastPostDate) : null
+    let streakCount = user.streakCount || 0
+
+    if (lastPostDate) {
+      const yesterday = new Date()
+      yesterday.setDate(today.getDate() - 1)
+      yesterday.setHours(0, 0, 0, 0)
+
+      if (lastPostDate >= yesterday) {
+        streakCount++
+      } else {
+        streakCount = 1
+      }
+    } else {
+      streakCount = 1
+    }
+
+    await prisma.users.update({
+      where: {
+        id: Number(requestBodyUserId)
+      },
+      data: {
+        streakCount,
+        lastPostDate: today
+      }
+    })
+
+    newPost.message = ['Great!', 'Your diary post has been published', `This is your day ${streakCount} writing non-stop`]
     pusher.trigger('posts-channel', 'today-has-posted', {
       postId: Number(newPost.id),
       userId: Number(requestBodyUserId)

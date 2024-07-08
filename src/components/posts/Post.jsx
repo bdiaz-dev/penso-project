@@ -6,8 +6,9 @@ import { useRouter } from 'next/navigation'
 import HashtagsForm from '@/app/write/components/HashtagsForm'
 import { useSession } from 'next-auth/react'
 import Comments from './Comments'
+import FollowButton from '../FollowButton'
 
-export default function Post ({ post, noAvatar, isUserPost, handleClickTag }) {
+export default function Post ({ post, noAvatar, isUserPost, handleClickTag, isProfilePost }) {
   const [isEditing, setIsEditing] = useState(false)
   const [textEdit, setTextEdit] = useState(post.content)
   const [hashtagsList, setHashtagsList] = useState([])
@@ -150,6 +151,13 @@ export default function Post ({ post, noAvatar, isUserPost, handleClickTag }) {
                           >
                             {post?.user?.nickName}
                           </h2>
+                          {
+                            (post.user.email === session.user.email || isProfilePost)
+                              ? null
+                              : <div className='ml-2 flex justify-center items-center'>
+                              <FollowButton userId={session.user.id} toFollowId={post.user.id} initialIsFollowing={post.isFollowing} />
+                            </div>
+                          }
                         </div>
 
                         <div>
@@ -189,13 +197,30 @@ export default function Post ({ post, noAvatar, isUserPost, handleClickTag }) {
                             isUserPost
                               ? <div
                                 className='mt-2 flex gap-5'>
-                                <b
+                                <button
                                   onClick={() => setIsEditing(true)}
-                                  className='cursor-pointer'>
-                                  Edit</b>
-                                <b
-                                  onClick={handleDelete}>
-                                  Delete</b>
+                                  className='rounded p-2 border-2 border-blue-200'>
+                                  Edit
+                                </button>
+                                <button
+                                  onClick={handleDelete}
+                                  className='rounded p-2 border-2 border-blue-200'>
+                                  Delete
+                                </button>
+                              </div>
+                              : <></>
+                          }
+                        </div>
+                        <div>
+                          {
+                            !isUserPost
+                              ? <div
+                                className='mt-2 flex gap-5'>
+                                <button
+                                  onClick={() => { alert('saved') }}
+                                  className='rounded p-2 border-2 border-blue-200'>
+                                  Save
+                                </button>
                               </div>
                               : <></>
                           }
