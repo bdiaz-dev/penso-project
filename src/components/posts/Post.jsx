@@ -5,6 +5,7 @@ import { Suspense, useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import HashtagsForm from '@/app/write/components/HashtagsForm'
 import { useSession } from 'next-auth/react'
+import Comments from './Comments'
 
 export default function Post ({ post, noAvatar, isUserPost, handleClickTag }) {
   const [isEditing, setIsEditing] = useState(false)
@@ -97,7 +98,7 @@ export default function Post ({ post, noAvatar, isUserPost, handleClickTag }) {
 
   return (
     <div
-    className={`${isDeleted ? 'hidden' : 'block'}`}>
+    className={`${isDeleted ? 'hidden' : 'block'} bg-slate-900 p-4 rounded w-4/5 m-auto mb-4`}>
             {
               isSaving
                 ? <b className='text-white'>Saving...</b>
@@ -129,7 +130,7 @@ export default function Post ({ post, noAvatar, isUserPost, handleClickTag }) {
 
                       </form>
 
-                      : < div className='mx-20 mb-20' >
+                      : < div className='mx-20 mb-5' >
 
                         <div className='flex flex-row justify-start items-center'>
                           {
@@ -140,7 +141,7 @@ export default function Post ({ post, noAvatar, isUserPost, handleClickTag }) {
                               alt="user avatar"
                               height={50}
                               width={50}
-                              className='cursor-pointer'
+                              className='cursor-pointer rounded-full'
                             />}
                           <h2
                             onClick={() => { router.push(`/user/${post.user.nickName}`) }}
@@ -155,12 +156,12 @@ export default function Post ({ post, noAvatar, isUserPost, handleClickTag }) {
                           {date.toLocaleDateString()}
                         </div>
 
-                        <div className='bg-slate-400 rounded p-2'>
-                          <p className='ml-5 mb-5'>{post.content}</p>
+                        <div className='bg-slate-400 rounded p-2 whitespace-pre-line'>
+                          <p className='ml-5 mb-5'>{`${post.content}`}</p>
                           {
                             isUpdated &&
                             <b>
-                              {`< Edited on ${updatedDate} >`}
+                              {`< Edited on ${updatedDate.toLocaleDateString()} >`}
                             </b>
                           }
 
@@ -214,6 +215,14 @@ export default function Post ({ post, noAvatar, isUserPost, handleClickTag }) {
 
                       </div >
                   }
+
+                  <div
+                  className='ml-28 mb-20'>
+                    <Comments postId={post.id} initialComments={post.comments} commentsCount={post._count.comments}
+                    // user={session.user}
+                    />
+                  </div>
+
                 </>
             }
           </div>

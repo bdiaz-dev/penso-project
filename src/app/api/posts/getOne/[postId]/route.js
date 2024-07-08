@@ -23,7 +23,16 @@ export async function GET (req, { params }) {
 
           }
         },
-        _count: { select: { likes: true } },
+        comments: {
+          take: 2,
+          include: {
+            user: true
+          },
+          orderBy: {
+            createdAt: 'desc'
+          }
+        },
+        _count: { select: { likes: true, comments: true } },
         likes: { where: { userId } }
       }
     })

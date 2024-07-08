@@ -11,35 +11,16 @@ export async function GET (req, { params }) {
     if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
     const { postId, table } = params
+    const tableInCamelCase = (table === 'likestoposts') ? 'likesToPosts' : 'likesToComments'
+    const tableToSearchId = (tableInCamelCase === 'likesToPosts' ? { postId: Number(postId) } : { commentId: Number(postId) })
 
-    const likesCount = table === 'likestoposts'
-      ? (await prisma.likesToPosts.count({
-          where: {
-            postId: Number(postId)
-          }
-        }))
+    const likesCount = await prisma[tableInCamelCase].count({
+      where: { ...tableToSearchId }
+    })
 
-      : (await prisma.likesToComments.count({
-          where: {
-            postId: Number(postId)
-          }
-        }))
-
-    const isLikedByUser = table === 'likestoposts'
-
-      ? (await prisma.likesToPosts.findMany({
-          where: {
-            postId: Number(postId),
-            userId: Number(token.id)
-          }
-        }))
-
-      : (await prisma.likesToComments.findMany({
-          where: {
-            postId: Number(postId),
-            userId: Number(token.id)
-          }
-        }))
+    const isLikedByUser = await prisma[tableInCamelCase].findMany({
+      where: { ...tableToSearchId, userId: Number(token.id) }
+    })
 
     return NextResponse.json({ count: likesCount, isLiked: (isLikedByUser.length > 0) })
   } catch (error) {
@@ -54,50 +35,47 @@ export async function POST (req, { params }) {
 
     const { postId, table } = params
 
+    const tableToSearchUser = (table === 'likestoposts') ? 'posts' : 'comments'
     const tableInCamelCase = (table === 'likestoposts') ? 'likesToPosts' : 'likesToComments'
     const notificationType = (table === 'likestoposts') ? 'LIKE_POST' : 'LIKE_COMMENT'
 
-    const post = await prisma.posts.findFirst({
+    const ct = await prisma[tableToSearchUser].findFirst({
       where: {
         id: Number(postId)
-      },
-      select: {
-        userId: true
       }
     })
-    const { userId: postOwner } = post
+
+    const { userId: postOwner } = ct
     const isSameUser = postOwner === Number(token.id)
+    const tableToSearchId = (tableInCamelCase === 'likesToPosts' ? { postId: Number(postId) } : { commentId: Number(postId) })
     const res = isSameUser
       ? await prisma[tableInCamelCase].create({
-        data: {
-          postId: Number(postId),
-          userId: Number(token.id)
-        }
+        data: { userId: Number(token.id), ...tableToSearchId }
       })
       : await prisma[tableInCamelCase].create({
         data: {
-          postId: Number(postId),
           userId: Number(token.id),
           notifications: {
             create: {
               type: notificationType,
               userId: postOwner,
               actorId: Number(token.id),
-              postId: notificationType === 'LIKE_POST' ? Number(postId) : null,
+              postId: notificationType === 'LIKE_POST' ? Number(postId) : Number(ct.postId),
               commentId: notificationType === 'LIKE_COMMENT' ? Number(postId) : null
             }
-          }
+          },
+          ...tableToSearchId
         }
       })
 
-    const likesCount = await prisma[tableInCamelCase].count({
-      where: { postId: Number(postId) }
-    })
+    // const likesCount = await prisma[tableInCamelCase].count({
+    //   where: { ...tableToSearchId }
+    // })
 
-    pusher.trigger(`${table}-likes-channel`, 'new-like', {
-      postId: Number(postId),
-      likesCount
-    })
+    // pusher.trigger(`${table}-likes-channel`, 'new-like', {
+    //   ...tableToSearchId,
+    //   likesCount
+    // })
     if (!isSameUser) {
       pusher.trigger('notifications-channel', 'new-notification', {
         userId: Number(postOwner)
@@ -118,10 +96,11 @@ export async function DELETE (req, { params }) {
     const { postId, table } = params
 
     const tableInCamelCase = (table === 'likestoposts') ? 'likesToPosts' : 'likesToComments'
+    const tableToSearchId = (tableInCamelCase === 'likesToPosts' ? { postId: Number(postId) } : { commentId: Number(postId) })
 
     const likeId = await prisma[tableInCamelCase].findFirst({
       where: {
-        postId: Number(postId),
+        ...tableToSearchId,
         userId: Number(token.id)
       },
       select: {
@@ -138,14 +117,14 @@ export async function DELETE (req, { params }) {
     })
     console.log('deleted ', res.id)
 
-    const likesCount = await prisma[tableInCamelCase].count({
-      where: { postId: Number(postId) }
-    })
+    // const likesCount = await prisma[tableInCamelCase].count({
+    //   where: { ...tableToSearchId }
+    // })
 
-    pusher.trigger(`${table}-likes-channel`, 'remove-like', {
-      postId: Number(postId),
-      likesCount
-    })
+    // pusher.trigger(`${table}-likes-channel`, 'remove-like', {
+    //   postId: Number(postId),
+    //   likesCount
+    // })
 
     return NextResponse.json(`like to post: ${postId} removed`)
   } catch (error) {

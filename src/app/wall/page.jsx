@@ -1,89 +1,37 @@
 'use client'
 
-import { useState, useEffect, useRef, useCallback } from 'react'
-import Post from '@/components/posts/Post'
-import { useRouter } from 'next/navigation'
+import { useState } from 'react'
+import FollowingPosts from './components/followingPosts'
+import ExplorePosts from './components/explorePosts'
 
 export default function PostsFeed () {
-  const [posts, setPosts] = useState([])
-  const [page, setPage] = useState(1)
-  const [loading, setLoading] = useState(false)
-  const [hasMore, setHasMore] = useState(true)
-  const observer = useRef()
-  const router = useRouter()
-
-  const searchByTag = (tag) => {
-    router.push(`/wall/searchByTag/${tag}`)
-  }
-
-  const loadPosts = useCallback(async () => {
-    setLoading(true)
-    const res = await fetch(`/api/posts?page=${page}&limit=5`)
-    const data = await res.json()
-    if (!data.posts) {
-      setHasMore(false)
-    } else {
-      if (data?.posts?.length === 0) {
-        setHasMore(false)
-      } else {
-        // setPosts([...data?.posts])
-        setPosts((prevPosts) => {
-          const postIds = new Set(prevPosts.map(post => post.id))
-          const newPosts = data.posts.filter(post => !postIds.has(post.id))
-          return [...prevPosts, ...newPosts]
-        })
-        setHasMore(data.hasMore)
-      }
-    }
-    setLoading(false)
-  }, [page])
-
-  useEffect(() => {
-    if (hasMore && !loading) {
-      loadPosts()
-    }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [page])
-
-  const lastPostRef = useCallback(
-    (node) => {
-      if (loading || !hasMore) return
-      if (observer.current) observer.current.disconnect()
-
-      observer.current = new IntersectionObserver((entries) => {
-        if (entries[0].isIntersecting) {
-          const newPage = (page + 1)
-          setPage(newPage)
-        }
-      })
-
-      if (node) observer.current.observe(node)
-    },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [loading, hasMore]
-  )
+  const [isOnExplore, setIsOnExplore] = useState(false)
 
   return (
-    <div className='mt-14'>
-      {posts && posts.map((post, index) => {
-        return (
+    <div className='m-auto mt-14 max-w-7xl'>
 
-          <div
-            ref={index === posts.length - 1 ? lastPostRef : null}
-            key={post.id}
-          >
+{/* Feed Mode Buttons */}
+      <div className='flex flex-row gap-4 justify-center items-center p-2'>
+        <button
+          onClick={() => setIsOnExplore(false)}
+          className={`bg-blue-${isOnExplore ? '400' : '600'} hover:bg-blue-600 p-2 rounded`}>
+          Following
+        </button>
+        <button
+          onClick={() => setIsOnExplore(true)}
+          className={`bg-blue-${isOnExplore ? '600' : '400'} hover:bg-blue-600 p-2 rounded`}>
+          Explore
+        </button>
+      </div>
 
-            <Post
-              post={post}
-              handleClickTag={searchByTag}
-            />
+{/* Feeds Components */}
+      <div className={`${isOnExplore ? 'hidden' : 'block'}`}>
+        <FollowingPosts />
+      </div>
+      <div className={`${!isOnExplore ? 'hidden' : 'block'}`}>
+        <ExplorePosts />
+      </div>
 
-          </div>
-
-        )
-      })}
-      {loading && <p>Loading...</p>}
-      {!hasMore && <p>No more posts to load.</p>}
     </div>
   )
 }

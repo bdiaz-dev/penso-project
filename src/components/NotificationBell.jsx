@@ -18,11 +18,11 @@ export default function NotificationBell ({ userId }) {
   }
   const eventUrl = ({ n }) => {
     const urls = {
-      LIKE_POST: `post/${n.postId}`,
-      LIKE_COMMENT: 'likes your comment',
+      LIKE_POST: `/post/${n.postId}`,
+      LIKE_COMMENT: `/post/${n.postId}`,
       FOLLOW: `/user/${n.actor.nickName}`,
-      NEW_POST: `post?postId=${n.postId}`,
-      NEW_COMMENT: 'has commented your post'
+      NEW_POST: `/post/${n.postId}`,
+      NEW_COMMENT: `/post/${n.postId}`
     }
     return urls[n.type]
   }

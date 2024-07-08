@@ -1,10 +1,10 @@
 import { prisma } from '@/libs/prisma'
 import Image from 'next/image'
 import { getServerSession } from 'next-auth'
+import Post from '@/components/posts/Post'
 import Bio from './components/Bio'
 import FollowButton from '@/components/FollowButton'
 import searchId from '@/libs/searchId'
-import ProfilePosts from './components/ProfilePosts'
 
 export default async function UserPage ({ params }) {
   const session = await getServerSession()
@@ -19,34 +19,34 @@ export default async function UserPage ({ params }) {
     }
   })
 
-  // if (user) {
-  //   const posts = await prisma.posts.findMany({
-  //     where: {
-  //       userId: user.id
-  //     },
-  //     include: {
-  //       hashtags: {
-  //         include: {
-  //           hashtag: true
-  //         }
-  //       },
-  //       comments: {
-  //         include: { user: true },
-  //         take: 2,
-  //         orderBy: {
-  //           createdAt: 'desc'
-  //         }
-  //       },
-  //       _count: { select: { likes: true, comments: true } },
-  //       likes: { where: { user } }
-  //     },
-  //     orderBy: {
-  //       createdAt: 'desc'
-  //     }
-  //   })
+  if (user) {
+    const posts = await prisma.posts.findMany({
+      where: {
+        userId: user.id
+      },
+      include: {
+        hashtags: {
+          include: {
+            hashtag: true
+          }
+        },
+        comments: {
+          include: { user: true },
+          take: 2,
+          orderBy: {
+            createdAt: 'desc'
+          }
+        },
+        _count: { select: { likes: true, comments: true } },
+        likes: { where: { user } }
+      },
+      orderBy: {
+        createdAt: 'desc'
+      }
+    })
 
-  //   user.posts = posts
-  // }
+    user.posts = posts
+  }
 
   const isUserPage = user.email === session.user.email
   const userId = await searchId(session.user.email)
@@ -89,7 +89,20 @@ export default async function UserPage ({ params }) {
         >
           Posts
         </h2>
-        <ProfilePosts userId={userId} />
+        <ul>
+          {user.posts.map((post) => (
+            <li
+              key={post.id}
+              className=' rounded p-2 mx-2 mb-4 flex flex-col justify-center'
+            >
+              <Post
+                post={post}
+                noAvatar
+                isUserPost={isUserPage}
+              />
+            </li>
+          ))}
+        </ul>
       </div>
 
       <h3>

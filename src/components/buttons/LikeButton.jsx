@@ -14,7 +14,9 @@ export default function LikeButton ({ table, id, isLikedBool, likesCount }) {
   const [isLiked, setIsLiked] = useState(isLikedBool)
 
   const getLikes = useCallback(async (table, id) => {
+    console.log(table, id)
     if (!table || !id) return
+    console.log('passing')
     if (loading) return
 
     try {
@@ -22,6 +24,7 @@ export default function LikeButton ({ table, id, isLikedBool, likesCount }) {
 
       const res = await fetch(`/api/likes/${table}/${id}`)
       const data = await res.json()
+      console.log(data)
 
       // console.log(data)
 
@@ -32,6 +35,10 @@ export default function LikeButton ({ table, id, isLikedBool, likesCount }) {
     }
 
     setLoading(false)
+  }, [])
+
+  useEffect(() => {
+    getLikes(table, id)
   }, [])
 
   useEffect(() => {
@@ -59,18 +66,24 @@ export default function LikeButton ({ table, id, isLikedBool, likesCount }) {
   const handleLike = useCallback(async (table, id, method) => {
     if (!table || !id) return
     if (loading) return
+    setIsLiked(method === 'POST')
+    setCount((prevCount) => ((method === 'POST') ? prevCount + 1 : prevCount - 1))
 
-    setLoading(true)
-    const res = await fetch(`/api/likes/${table}/${id}`, {
-      method,
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ userEmail })
-    })
+    try {
+      setLoading(true)
+      const res = await fetch(`/api/likes/${table}/${id}`, {
+        method,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userEmail })
+      })
 
-    getLikes(table, id)
+      getLikes(table, id)
 
-    const data = await res.json()
-    console.log(data)
+      const data = await res.json()
+      console.log(data)
+    } catch (error) {
+      console.log(error.message)
+    }
   }, [])
 
   const handleClickLike = () => {
@@ -78,27 +91,28 @@ export default function LikeButton ({ table, id, isLikedBool, likesCount }) {
   }
 
   const normalButton = <button
-    className={isLiked ? 'bg-green-600 p-2 rounded mt-4' : 'bg-blue-600 p-2 rounded mt-4'}
-    onClick={handleClickLike}
+    className={isLiked ? 'bg-green-600 p-2 rounded border-2 border-blue-200' : 'bg-blue-600 p-2 rounded border-2 border-blue-200'}
+    onClick={!loading ? handleClickLike : console.log('not working because is loading')}
   >
     <span>👍 </span>
     {count}
   </button>
 
-  const loadingButton = <button
-    className={'bg-slate-600 p-2 rounded mt-4 text-slate-400'}
-  >
-    <span>👍 </span>
-    Loading
-  </button>
+  // const loadingButton = <button
+  //   className={'bg-slate-600 p-2 rounded text-slate-400 border-2 border-blue-200'}
+  // >
+  //   <span>👍 </span>
+  //   Loading
+  // </button>
 
   return (
     <div>
-      {
+      {normalButton}
+      {/* {
         !loading
           ? normalButton
           : loadingButton
-      }
+      } */}
     </div>
   )
 }
