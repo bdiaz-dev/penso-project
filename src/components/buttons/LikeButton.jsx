@@ -90,7 +90,7 @@ export default function LikeButton ({ table, id, isLikedBool = null, likesCount 
   }
 
   const normalButton = <button
-    className={isLiked ? 'bg-green-600 p-2 rounded border-2 border-blue-200' : 'bg-blue-600 p-2 rounded border-2 border-blue-200'}
+    className={isLiked ? 'bg-green-600 p-1 px-2 rounded border-2 border-blue-200' : 'bg-blue-600 p-1 px-2 rounded border-2 border-blue-200'}
     onClick={!loading ? handleClickLike : console.log('not working because is loading')}
   >
     <span>👍 </span>

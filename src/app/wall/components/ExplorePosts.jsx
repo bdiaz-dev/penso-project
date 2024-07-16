@@ -18,7 +18,7 @@ export default function ExplorePosts () {
 
   const loadPosts = useCallback(async () => {
     setLoading(true)
-    const res = await fetch(`/api/posts/forWall/explore?page=${page}&limit=5`)
+    const res = await fetch(`/api/posts/forWall/explore?page=${page}&limit=2`)
     const data = await res.json()
     if (!data.posts) {
       setHasMore(false)

@@ -4,8 +4,9 @@ import { useState, useEffect, useRef, useCallback } from 'react'
 import Post from '@/components/posts/Post'
 import { useRouter } from 'next/navigation'
 import { useSession } from 'next-auth/react'
+import { getPins } from '@/libs/handlePins'
 
-export default function ProfilePosts ({ userId }) {
+export default function ProfilePins ({ userId }) {
   const [posts, setPosts] = useState([])
   const [page, setPage] = useState(1)
   const [loading, setLoading] = useState(false)
@@ -21,8 +22,7 @@ export default function ProfilePosts ({ userId }) {
 
   const loadPosts = useCallback(async () => {
     setLoading(true)
-    const res = await fetch(`/api/posts/forProfilePage/?userId=${userId}&page=${page}&limit=2`)
-    const data = await res.json()
+    const data = await getPins({ page, userId })
     if (!data.posts) {
       setHasMore(false)
     } else {

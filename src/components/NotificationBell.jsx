@@ -74,7 +74,7 @@ export default function NotificationBell ({ userId }) {
         }}
       >
         🔔</b>
-      <b>{`(${noReadedNotifications})`}</b>
+      <b className='text-sm absolute text-yellow-500'>{`${noReadedNotifications > 0 ? noReadedNotifications : ' '}`}</b>
       {
         notifications && showingNotifications &&
         <ul

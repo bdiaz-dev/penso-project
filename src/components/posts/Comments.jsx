@@ -95,23 +95,29 @@ export default function Comments ({ postId, initialComments, commentsCount }) {
   }, [newCommentFormText, postId, user, setIsWriting])
 
   return (
-    <div>
-      <div>
+    <div className='w-5/6 border-l-2 border-white p-4'>
+      <div className='flex flex-row gap-2 items-center mb-2'>
         <h2
-        className='text-xl mb-2'>
-          {`Comments (${count})`}
+          className='text-xl'>
+          {
+            count > 0
+              ? `💬 (${count})`
+              : 'Nobody commented. Be first'
+          }
         </h2>
-      </div>
-      <div>
         <button
-          className='p-1 rounded bg-blue-400 hover:bg-blue-600'
+          title='Write new comment'
+          className='rounded border-2 border-blue-200 hover:bg-blue-600 p-1 justify-center'
           onClick={() => { setIsWriting((prevSt) => !prevSt) }}>
           {
             isWriting
-              ? 'Cancel'
-              : 'Write New Comment'
+              ? '❌'
+              : '➕'
           }
         </button>
+      </div>
+      <div className='flex flex-row justify-center'>
+
       </div>
       {
         isWriting &&
@@ -124,7 +130,7 @@ export default function Comments ({ postId, initialComments, commentsCount }) {
           <button
             onClick={(e) => { handleNewComment(e) }}
             className='p-1 rounded bg-green-800 hover:bg-green-600'>
-            Save
+            💾
           </button>
         </form>}
 

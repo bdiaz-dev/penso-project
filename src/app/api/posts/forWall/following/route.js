@@ -66,10 +66,14 @@ export async function GET (req) {
         _count: {
           select: {
             likes: true,
-            comments: true
+            comments: true,
+            pins: true
           }
         },
-        likes: { where: { userId } }
+        likes: { where: { userId } },
+        pins: {
+          where: { userId }
+        }
       },
       skip: offset,
       take: limit,

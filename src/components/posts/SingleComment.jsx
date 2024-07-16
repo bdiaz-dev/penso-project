@@ -6,8 +6,10 @@ import { useState, useEffect, useCallback } from 'react'
 import Image from 'next/image'
 import LikeButton from '../buttons/LikeButton'
 import { deleteComment, editComment } from '@/libs/handleComments'
+import { useRouter } from 'next/navigation'
 
 export default function Comment ({ userId, comment }) {
+  const router = useRouter()
   const [isEditing, setIsEditing] = useState(false)
   const [isSaving, setIsSaving] = useState(false)
   const [editText, setEditText] = useState(comment.content)
@@ -73,22 +75,27 @@ export default function Comment ({ userId, comment }) {
       {
         isDeleted ||
         <div>
-          <div
-            className='flex gap-2 items-center m-2'>
+          <div className='flex flex-row justify-start items-center gap-3 relative mb-2'>
             <Image
-              className='rounded-full'
+              onClick={() => { router.push(`/user/${comment.user.nickName}`) }}
               src={comment?.user?.avatar}
-              alt='🙂'
-              height={40}
-              width={40} />
+              alt="user avatar"
+              height={50}
+              width={50}
+              className='cursor-pointer rounded-full'
+            />
+            <div>
+              <h2
+                onClick={() => { router.push(`/user/${comment.user.nickName}`) }}
+                className='cursor-pointer font-bold'
 
-            <span>
-              {comment?.user?.nickName}
-            </span>
-          </div>
-
-          <div>
-            {date.toLocaleDateString()}
+              >
+                {comment?.user?.nickName}
+              </h2>
+              <div className='italic text-slate-400'>
+                {date.toLocaleDateString()}
+              </div>
+            </div>
           </div>
 
           {isEditing &&
@@ -125,13 +132,13 @@ export default function Comment ({ userId, comment }) {
               <>
                 <button
                   onClick={handleEdit}
-                  className='rounded p-2 border-2 border-blue-200'>
-                  {isEditing ? 'Save' : 'Edit'}
+                  className='rounded p-1 px-2 border-2 border-blue-200'>
+                  {isEditing ? '💾' : '✍'}
                 </button>
                 <button
                   onClick={handleDelete}
-                  className='rounded p-2 border-2 border-blue-200'>
-                  {'Delete'}
+                  className='rounded p-1 px-2 border-2 border-blue-200'>
+                  {'❌'}
                 </button>
               </>
             }

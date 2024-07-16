@@ -4,8 +4,9 @@ import { useState, useEffect, useRef, useCallback } from 'react'
 import Post from '@/components/posts/Post'
 import { useRouter } from 'next/navigation'
 import { useSession } from 'next-auth/react'
+import { getPins } from '@/libs/handlePins'
 
-export default function ProfilePosts ({ userId }) {
+export default function PinedPosts ({ userId }) {
   const [posts, setPosts] = useState([])
   const [page, setPage] = useState(1)
   const [loading, setLoading] = useState(false)
@@ -13,7 +14,6 @@ export default function ProfilePosts ({ userId }) {
   const observer = useRef()
   const router = useRouter()
   const { data: session } = useSession()
-  const isUserPost = userId === session?.user.id
 
   const searchByTag = (tag) => {
     router.push(`/wall/searchByTag/${tag}`)
@@ -21,7 +21,7 @@ export default function ProfilePosts ({ userId }) {
 
   const loadPosts = useCallback(async () => {
     setLoading(true)
-    const res = await fetch(`/api/posts/forProfilePage/?userId=${userId}&page=${page}&limit=2`)
+    const res = await getPins({ page, userId })
     const data = await res.json()
     if (!data.posts) {
       setHasMore(false)
@@ -80,7 +80,7 @@ export default function ProfilePosts ({ userId }) {
               post={post}
               handleClickTag={searchByTag}
               isProfilePost
-              isUserPost={isUserPost}
+              isUserPost={post.user.id === session?.user.id}
             />
 
           </div>

@@ -18,7 +18,7 @@ export default function FollowingPosts () {
 
   const loadPosts = useCallback(async () => {
     setLoading(true)
-    const res = await fetch(`/api/posts/forWall/following?page=${page}&limit=5`)
+    const res = await fetch(`/api/posts/forWall/following?page=${page}&limit=2`)
     const data = await res.json()
     if (!data.posts) {
       setHasMore(false)

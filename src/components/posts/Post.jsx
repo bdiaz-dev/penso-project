@@ -7,6 +7,7 @@ import HashtagsForm from '@/app/write/components/HashtagsForm'
 import { useSession } from 'next-auth/react'
 import Comments from './Comments'
 import FollowButton from '../FollowButton'
+import PinsButton from '../buttons/PinButton'
 
 export default function Post ({ post, noAvatar, isUserPost, handleClickTag, isProfilePost }) {
   const [isEditing, setIsEditing] = useState(false)
@@ -94,162 +95,160 @@ export default function Post ({ post, noAvatar, isUserPost, handleClickTag, isPr
     if (date.getHours() < updatedDate.getHours()) {
       setIsUpdated(true)
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   return (
     <div
-    className={`${isDeleted ? 'hidden' : 'block'} bg-slate-900 p-4 rounded w-4/5 m-auto mb-4`}>
+      className={`${isDeleted ? 'hidden' : 'block'} bg-slate-900 p-4 rounded w-4/5 m-auto mb-4`}>
+      {
+        isSaving
+          ? <b className='text-white'>Saving...</b>
+          : <>
             {
-              isSaving
-                ? <b className='text-white'>Saving...</b>
-                : <>
-                  {
-                    isEditing
+              isEditing
 
-                      ? <form className='mx-20 mb-20'>
+                ? <form className='mx-20 mb-20'>
 
-                        <b>
-                          Editing
-                        </b>
+                  <b>
+                    Editing
+                  </b>
 
-                        <textarea
-                          className='text-black w-full h-auto resize-none p-4 rounded border-blue-700 border-4'
-                          rows={8}
-                          value={textEdit}
-                          onChange={(e) => { setTextEdit(e.target.value) }} />
+                  <textarea
+                    className='text-black w-full h-auto resize-none p-4 rounded border-blue-700 border-4'
+                    rows={8}
+                    value={textEdit}
+                    onChange={(e) => { setTextEdit(e.target.value) }} />
 
-                        <HashtagsForm
-                          initialTagsList={hashtagsList}
-                          handleSetTags={handleSetTags} />
+                  <HashtagsForm
+                    initialTagsList={hashtagsList}
+                    handleSetTags={handleSetTags} />
 
-                        <button
-                          className='bg-blue-700 hover:bg-blue-500 rounded p-2'
-                          onClick={(e) => { handleSubmit(e) }}>
-                          Save
-                        </button>
+                  <button
+                    className='bg-blue-700 hover:bg-blue-500 rounded p-2'
+                    onClick={(e) => { handleSubmit(e) }}>
+                    Save
+                  </button>
 
-                      </form>
+                </form>
 
-                      : < div className='mx-20 mb-5' >
+                : < div className='mx-20 p-4 border-2 border-white rounded' >
 
-                        <div className='flex flex-row justify-start items-center'>
-                          {
-                            noAvatar ||
-                            <Image
-                              onClick={() => { router.push(`/user/${post.user.nickName}`) }}
-                              src={post?.user?.avatar}
-                              alt="user avatar"
-                              height={50}
-                              width={50}
-                              className='cursor-pointer rounded-full'
-                            />}
-                          <h2
-                            onClick={() => { router.push(`/user/${post.user.nickName}`) }}
-                            className='cursor-pointer'
+                  <div className='flex flex-row justify-start items-center gap-3 relative mb-2'>
+                    {
+                      noAvatar ||
+                      <Image
+                        onClick={() => { router.push(`/user/${post.user.nickName}`) }}
+                        src={post?.user?.avatar}
+                        alt="user avatar"
+                        height={50}
+                        width={50}
+                        className='cursor-pointer rounded-full'
+                      />}
+                    <div>
+                      <h2
+                        onClick={() => { router.push(`/user/${post.user.nickName}`) }}
+                        className='cursor-pointer font-bold'
 
-                          >
-                            {post?.user?.nickName}
-                          </h2>
-                          {
-                            (post.user.email === session.user.email || isProfilePost)
-                              ? null
-                              : <div className='ml-2 flex justify-center items-center'>
-                              <FollowButton userId={session.user.id} toFollowId={post.user.id} initialIsFollowing={post.isFollowing} />
-                            </div>
-                          }
+                      >
+                        {post?.user?.nickName}
+                      </h2>
+                      <div className='italic text-slate-400'>
+                        {date.toLocaleDateString()}
+                      </div>
+                    </div>
+
+                    {
+                      (post.user.email === session.user.email || isProfilePost)
+                        ? null
+                        : <div className='ml-2 flex justify-center items-center absolute right-0'>
+                          <FollowButton userId={session.user.id} toFollowId={post.user.id} initialIsFollowing={post.isFollowing} />
                         </div>
-
-                        <div>
-                          {date.toLocaleDateString()}
-                        </div>
-
-                        <div className='bg-slate-400 rounded p-2 whitespace-pre-line'>
-                          <p className='ml-5 mb-5'>{`${post.content}`}</p>
-                          {
-                            isUpdated &&
-                            <b>
-                              {`< Edited on ${updatedDate.toLocaleDateString()} >`}
-                            </b>
-                          }
-
-                        </div>
-
-                        <div className='flex flex-row gap-2 mt-2'>
-                          {(post.hashtags) && post.hashtags.map((h, index) => (
-                            <div onClick={() => {
-                              const t = h.hashtag ? h.hashtag.tag : h.tag
-                              handleClickTag(t)
-                            }} key={index} className='bg-slate-600 text-white rounded p-1 cursor-pointer hover:bg-slate-800'>
-                              <b>
-                                {
-                                  h.hashtag
-                                    ? h.hashtag.tag
-                                    : h.tag
-                                }
-                              </b>
-                            </div>
-                          ))}
-                        </div>
-
-                        <div>
-                          {
-                            isUserPost
-                              ? <div
-                                className='mt-2 flex gap-5'>
-                                <button
-                                  onClick={() => setIsEditing(true)}
-                                  className='rounded p-2 border-2 border-blue-200'>
-                                  Edit
-                                </button>
-                                <button
-                                  onClick={handleDelete}
-                                  className='rounded p-2 border-2 border-blue-200'>
-                                  Delete
-                                </button>
-                              </div>
-                              : <></>
-                          }
-                        </div>
-                        <div>
-                          {
-                            !isUserPost
-                              ? <div
-                                className='mt-2 flex gap-5'>
-                                <button
-                                  onClick={() => { alert('saved') }}
-                                  className='rounded p-2 border-2 border-blue-200'>
-                                  Save
-                                </button>
-                              </div>
-                              : <></>
-                          }
-                        </div>
-
-                        <Suspense>
-
-                          <LikeButton
-                            // likes={post?.likes?.length ?? 0}
-                            table={'likestoposts'}
-                            id={post.id}
-                            isLikedBool={post.likes > 0}
-                            likesCount={post._count.likes}
-                          />
-
-                        </Suspense>
-
-                      </div >
-                  }
-
-                  <div
-                  className='ml-28 mb-20'>
-                    <Comments postId={post.id} initialComments={post.comments} commentsCount={post._count.comments}
-                    // user={session.user}
-                    />
+                    }
                   </div>
 
-                </>
+
+
+                  <div className=' rounded whitespace-pre-line'>
+                    <p className='mb-5'>{`${post.content}`}</p>
+                    {
+                      isUpdated &&
+                      <b>
+                        {`< Edited on ${updatedDate.toLocaleDateString()} >`}
+                      </b>
+                    }
+
+                  </div>
+
+                  <div className='flex flex-row gap-2 mt-2 mb-2 items-centers'>
+                    <b className='text-xl bg-slate-600 text-white rounded px-2'>#</b>
+                    {(post.hashtags) && post.hashtags.map((h, index) => (
+                      <div onClick={() => {
+                        const t = h.hashtag ? h.hashtag.tag : h.tag
+                        handleClickTag(t)
+                      }} key={index} className='bg-slate-600 text-white rounded px-2 cursor-pointer hover:bg-slate-800'>
+                        <b>
+                          {
+                            h.hashtag
+                              ? h.hashtag.tag
+                              : h.tag
+                          }
+                        </b>
+                      </div>
+                    ))}
+                  </div>
+
+                  <div className='flex flex-row gap-2'>
+                    {
+                      isUserPost
+                        ? <div
+                          className='mt-2 flex gap-5'>
+                          <button
+                            onClick={() => setIsEditing(true)}
+                            className='rounded p-2 border-2 border-blue-200'>
+                            ✍
+                          </button>
+                          <button
+                            onClick={handleDelete}
+                            className='rounded p-2 border-2 border-blue-200'>
+                            ❌
+                          </button>
+                        </div>
+                        : <></>
+                    }
+                  </div>
+                  <div className='flex flex-row gap-2'>
+
+                    <Suspense>
+
+                      <LikeButton
+                        // likes={post?.likes?.length ?? 0}
+                        table={'likestoposts'}
+                        id={post.id}
+                        isLikedBool={post.likes > 0}
+                        likesCount={post._count.likes}
+                      />
+
+                      <PinsButton
+                        initialCount={post._count.pins}
+                        isPinedByUser={post.pins.length > 0}
+                        postId={post.id} />
+
+                    </Suspense>
+
+                  </div>
+                </div >
             }
-          </div>
+
+            <div
+              className='ml-28 mb-20'>
+              <Comments postId={post.id} initialComments={post.comments} commentsCount={post._count.comments}
+              // user={session.user}
+              />
+            </div>
+
+          </>
+      }
+    </div>
   )
 }

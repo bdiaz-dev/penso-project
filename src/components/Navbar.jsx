@@ -14,6 +14,7 @@ export default function NavBar () {
   const [userId, setUserId] = useState(null)
   const [postedToday, setPostedToday] = useState(false)
   const [nick, setNick] = useState(null)
+  const [isShowingMenu, setIsShowingMenu] = useState(false)
 
   useEffect(() => {
     if (!session) return
@@ -56,84 +57,80 @@ export default function NavBar () {
   }, [userId])
 
   return (
-    <nav className='sticky top-0 z-50'>
+    <nav className='sticky top-0 z-50 items-center'>
+      <b className='absolute left-4 top-3 text-xl'>
+        PensoProject
+      </b>
       <ul
-        className='bg-slate-500 flex justify-between items-center px-5 py-3 text-xl font-bold '
+        className={`bg-slate-700 text-white p-2 fixed top-20 ${isShowingMenu ? 'right-4' : 'left-full'}`}
+        onMouseLeave={() => setIsShowingMenu(false)}>
+        <li>
+          <Link href={`/user/${nick}`} onClick={() => setIsShowingMenu(false)}>
+            Profile
+          </Link>
+        </li>
+        <li>
+          <Link href={'/myPins'} onClick={() => setIsShowingMenu(false)}>
+            My Pins
+          </Link>
+        </li>
+        <li>
+          <button onClick={async () => { await signOut({ callbackUrl: '/' }); setIsShowingMenu(false) }}
+            className='bg-blue-700 px-5 py-2 rounded'>
+            Log Out
+          </button>
+        </li>
+      </ul>
+      <ul
+        className='bg-slate-500 flex justify-center items-center px-5 py-3 text-xl font-bold gap-4'
       >
         <li
-          className='hover:underline'
-        >
-          <Link
-            href={session ? '/wall' : '/'}
-          >
-            {session ? 'Wall' : 'Home'}
-          </Link>
+          className='hover:underline'>
+          <Link href={session ? '/wall' : '/'}>🏠</Link>
         </li>
 
         {/* --- Write Button --- */}
         {
           userId &&
-          <li
-          >
+          <li>
             {
               postedToday
-                ? <b>
-                  Already posted today
-                </b>
-                : <Link
-                  href={'/write'}
-                >
-                  Write
-                </Link>
+                ? <b>✅</b>
+                : <Link href={'/write'}>📝</Link>
             }
+          </li>
+        }
+        {
+          userId &&
+          <li>
+            <NotificationBell userId={userId} />
           </li>
         }
         {/* --- --- */}
 
-        <li
-          className='hover:underline flex gap-x-2'
+        <div
+          className=' flex gap-x-2 absolute right-4'
         >
           {/* <UserComponent /> */}
           {
             session?.user
               ? (
 
-                <div className='flex gap-2 items-center cursor-pointer'>
-                  <Link
-                    href={`/user/${nick}`}
-                  >
-                    {nick}
-                  </Link>
-
+                <div onClick={() => { setIsShowingMenu(!isShowingMenu) }} className='hover:underline flex gap-2 items-center cursor-pointer'>
+                  <b>{nick}</b>
                   <img
                     className='w-10 h-10 rounded-full'
                     src={session.user.image}
-                    alt='user_avatar'
-                  />
-
-                  <NotificationBell userId={userId} />
-
-                  <button
-                    onClick={async () => {
-                      await signOut({
-                        callbackUrl: '/'
-                      })
-                    }}
-                    className='bg-blue-700 px-5 py-2 rounded'
-                  >
-                    Log Out
-                  </button>
-
+                    alt='user_avatar' />
                 </div>)
               : (
                 <button
-                  onClick={() => signIn(undefined, { callbackUrl: '/welcome' })}
-                >
+                  onClick={() => signIn(undefined, { callbackUrl: '/welcome' })}>
                   Sing In
                 </button>)
           }
 
-        </li>
+        </div>
       </ul>
     </nav>
   )
