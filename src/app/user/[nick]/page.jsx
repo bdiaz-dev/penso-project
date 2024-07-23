@@ -22,7 +22,9 @@ export default async function UserPage ({ params }) {
       avatar: true,
       nickName: true,
       bio: true,
-      email: true
+      email: true,
+      streakCount: true,
+      _count: { select: { followers: true } }
     }
   })
 
@@ -58,6 +60,8 @@ export default async function UserPage ({ params }) {
   const isUserPage = profile.email === session.user.email
   const userId = await searchId(session.user.email)
 
+  const countPillsStyle = 'bg-slate-600 p-2 px-4 rounded'
+
   return (
     <article>
       <div
@@ -69,7 +73,7 @@ export default async function UserPage ({ params }) {
           width={150}
           height={150}
           src={profile.avatar}
-          className='justify-center items-center'
+          className='justify-center items-center rounded-full'
         />
         <h1
           className='font-bold text-3xl mx-2'
@@ -78,11 +82,20 @@ export default async function UserPage ({ params }) {
         </h1>
       </div>
 
+      {/* Followers & Streak View */}
+      <div className='flex flex-row justify-center gap-4 mb-4'>
+        <b className={countPillsStyle}>{`👁‍🗨 ${profile._count.followers}`}</b>
+        <b className={countPillsStyle}>{` 🔥 ${profile.streakCount}`}</b>
+      </div>
+      {/* ---- */}
+
+      {/* Follow Button */}
       {
         profile.email !== session.user.email &&
         <div className='flex justify-center items-center'>
           <FollowButton userId={userId} toFollowId={profile.id} />
         </div>}
+      {/* ---- */}
 
       <Bio
         user={profile}

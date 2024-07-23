@@ -45,6 +45,11 @@ export default function Comment ({ userId, comment }) {
       ? saveCommentChanges()
       : setIsEditing(true)
   }
+  const handleCancelEdit = (e) => {
+    e.preventDefault()
+    setEditText(comment.content)
+    setIsEditing(false)
+  }
 
   const saveCommentChanges = useCallback(async () => {
     setIsSaving(true)
@@ -100,14 +105,14 @@ export default function Comment ({ userId, comment }) {
 
           {isEditing &&
             <textarea
-              className='text-black p-2'
+              className='text-black p-2 w-5/6 rounded'
               value={editText}
               onChange={(e) => { setEditText(e.target.value) }}
               id='commentEditTextArea' />
           }
           {!isEditing &&
             <p
-              className='m-2 bg-slate-700 p-2 rounded whitespace-pre-line'>
+              className='py-2 mb-2 rounded whitespace-pre-line'>
               {`${commentContent}`}
               <br />
 
@@ -120,7 +125,7 @@ export default function Comment ({ userId, comment }) {
               }
             </p>}
           <div
-            className='ml-10 flex flex-row items-center gap-2'>
+            className='flex flex-row items-center gap-2'>
             <LikeButton
               // likes={post?.likes?.length ?? 0}
               table={'likestocomments'}
@@ -131,11 +136,21 @@ export default function Comment ({ userId, comment }) {
             {isUserComment &&
               <>
                 <button
+                  title='Edit comment'
                   onClick={handleEdit}
                   className='rounded p-1 px-2 border-2 border-blue-200'>
-                  {isEditing ? '💾' : '✍'}
+                  {isEditing ? '💾 Save' : '✍'}
                 </button>
+                {
+                  isEditing &&
+                  <button
+                  onClick={handleCancelEdit}
+                  className='rounded p-1 px-2 border-2 border-blue-200'>
+                    ⏪ Cancel
+                  </button>
+                }
                 <button
+                  title='Delete comment'
                   onClick={handleDelete}
                   className='rounded p-1 px-2 border-2 border-blue-200'>
                   {'❌'}

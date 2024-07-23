@@ -107,29 +107,21 @@ export default function Post ({ post, noAvatar, isUserPost, handleClickTag, isPr
           : <>
             {
               isEditing
-
                 ? <form className='mx-20 mb-20'>
-
-                  <b>
-                    Editing
-                  </b>
-
+                  <b>Editing</b>
                   <textarea
                     className='text-black w-full h-auto resize-none p-4 rounded border-blue-700 border-4'
                     rows={8}
                     value={textEdit}
                     onChange={(e) => { setTextEdit(e.target.value) }} />
-
                   <HashtagsForm
                     initialTagsList={hashtagsList}
                     handleSetTags={handleSetTags} />
-
                   <button
                     className='bg-blue-700 hover:bg-blue-500 rounded p-2'
                     onClick={(e) => { handleSubmit(e) }}>
                     Save
                   </button>
-
                 </form>
 
                 : < div className='mx-20 p-4 border-2 border-white rounded' >
@@ -167,8 +159,6 @@ export default function Post ({ post, noAvatar, isUserPost, handleClickTag, isPr
                     }
                   </div>
 
-
-
                   <div className=' rounded whitespace-pre-line'>
                     <p className='mb-5'>{`${post.content}`}</p>
                     {
@@ -181,8 +171,8 @@ export default function Post ({ post, noAvatar, isUserPost, handleClickTag, isPr
                   </div>
 
                   <div className='flex flex-row gap-2 mt-2 mb-2 items-centers'>
-                    <b className='text-xl bg-slate-600 text-white rounded px-2'>#</b>
-                    {(post.hashtags) && post.hashtags.map((h, index) => (
+                    {(post.hashtags > 0) && <b className='text-xl bg-slate-600 text-white rounded px-2'>#</b>}
+                    {(post.hashtags > 0) && post.hashtags.map((h, index) => (
                       <div onClick={() => {
                         const t = h.hashtag ? h.hashtag.tag : h.tag
                         handleClickTag(t)
@@ -199,26 +189,6 @@ export default function Post ({ post, noAvatar, isUserPost, handleClickTag, isPr
                   </div>
 
                   <div className='flex flex-row gap-2'>
-                    {
-                      isUserPost
-                        ? <div
-                          className='mt-2 flex gap-5'>
-                          <button
-                            onClick={() => setIsEditing(true)}
-                            className='rounded p-2 border-2 border-blue-200'>
-                            ✍
-                          </button>
-                          <button
-                            onClick={handleDelete}
-                            className='rounded p-2 border-2 border-blue-200'>
-                            ❌
-                          </button>
-                        </div>
-                        : <></>
-                    }
-                  </div>
-                  <div className='flex flex-row gap-2'>
-
                     <Suspense>
 
                       <LikeButton
@@ -235,7 +205,19 @@ export default function Post ({ post, noAvatar, isUserPost, handleClickTag, isPr
                         postId={post.id} />
 
                     </Suspense>
-
+                    {
+                      isUserPost &&
+                      <button
+                        onClick={() => setIsEditing(true)}
+                        className='rounded p-1 px-2 border-2 border-blue-200'>
+                        ✍
+                      </button>}
+                    {isUserPost &&
+                      <button
+                        onClick={handleDelete}
+                        className='rounded p-1 px-2 border-2 border-blue-200'>
+                        ❌
+                      </button>}
                   </div>
                 </div >
             }

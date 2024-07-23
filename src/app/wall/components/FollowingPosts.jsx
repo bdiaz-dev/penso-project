@@ -4,11 +4,12 @@ import { useState, useEffect, useRef, useCallback } from 'react'
 import Post from '@/components/posts/Post'
 import { useRouter } from 'next/navigation'
 
-export default function FollowingPosts () {
+export default function FollowingPosts ({ changeToExplore }) {
   const [posts, setPosts] = useState([])
   const [page, setPage] = useState(1)
   const [loading, setLoading] = useState(false)
   const [hasMore, setHasMore] = useState(true)
+  // const [noFollowingUsers, setNoFollowingUsers] = useState(false)
   const observer = useRef()
   const router = useRouter()
 
@@ -20,6 +21,7 @@ export default function FollowingPosts () {
     setLoading(true)
     const res = await fetch(`/api/posts/forWall/following?page=${page}&limit=2`)
     const data = await res.json()
+    if (data.noFollowingUsers) { changeToExplore() }
     if (!data.posts) {
       setHasMore(false)
     } else {
@@ -36,13 +38,13 @@ export default function FollowingPosts () {
       }
     }
     setLoading(false)
-  }, [page])
+  }, [page, changeToExplore])
 
   useEffect(() => {
     if (hasMore && !loading) {
       loadPosts()
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [page])
 
   const lastPostRef = useCallback(

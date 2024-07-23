@@ -32,8 +32,19 @@ export async function GET (req, { params }) {
             createdAt: 'desc'
           }
         },
-        _count: { select: { likes: true, comments: true } },
-        likes: { where: { userId } }
+        _count: {
+          select: {
+            likes: true,
+            comments: true,
+            pins: true
+          }
+        },
+        likes: { where: { userId } },
+        pins: {
+          where: {
+            userId
+          }
+        }
       }
     })
 

@@ -21,6 +21,7 @@ export async function GET (req) {
       where: { followerId: userId },
       select: { followingId: true }
     })
+
     const followingIds = following.map(f => f.followingId)
 
     const followingPosts = await prisma.posts.findMany({
@@ -88,8 +89,9 @@ export async function GET (req) {
     }))
 
     const hasMore = formattedFollowingPosts.length === limit
+    const noFollowingUsers = following.length < 1
 
-    return NextResponse.json({ posts: formattedFollowingPosts, hasMore })
+    return NextResponse.json({ posts: formattedFollowingPosts, hasMore, noFollowingUsers })
   } catch (error) {
     console.error(error)
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 })

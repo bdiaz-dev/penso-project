@@ -87,8 +87,11 @@ export default function ProfilePosts ({ userId }) {
 
         )
       })}
-      {loading && <p>Loading...</p>}
-      {!hasMore && <p>No more posts to load.</p>}
+      <div className='flex flex-row justify-center'>
+        {loading && <p>Loading...</p>}
+        {!hasMore && (posts.length > 0) && <p className='m-auto'>No more posts to load.</p>}
+        {!loading && !hasMore && posts.length < 1 && <p className='m-auto'>This user has not posted yet.</p>}
+      </div>
     </div>
   )
 }

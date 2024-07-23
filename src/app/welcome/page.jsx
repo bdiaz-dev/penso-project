@@ -29,7 +29,7 @@ export default async function WelcomePage () {
     session?.user
       ? (
         <div className='h-screen flex flex-col justify-center items-center align-middle'>
-          <h1 className=''>
+          <h1 className='text-xl font-bold'>
             {`Welcome ${session.user.name}`}
           </h1>
           <p>
@@ -38,21 +38,26 @@ export default async function WelcomePage () {
 
           {
             isNewUser && (
-              <div>
-                <p>You are new here! Please choose a nickname:</p>
-                <NickNameInput
-                  id={userId}
-                />
+              <div className='fixed w-full h-full top-0 left-0 bg-black flex flex-row justify-center items-center z-50'>
+                <div>
+                  <h1 className='text-xl font-bold'>
+                    {`Welcome ${session.user.name}`}
+                  </h1>
+                  <p>You are new here! Please choose a nickname:</p>
+                  <NickNameInput
+                    id={userId}
+                  />
+                </div>
               </div>
             )
           }
           <RedirectToWall isNewUser={isNewUser} />
         </div>
-      )
+        )
       : (
         <h1 className='h-screen flex justify-center items-center align-middle'>
           Loading...
         </h1>
-      )
+        )
   )
 }

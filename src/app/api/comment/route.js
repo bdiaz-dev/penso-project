@@ -22,11 +22,28 @@ export async function POST (req) {
   }
 
   try {
+    const postUser = await prisma.posts.findFirst({
+      where: {
+        id: postId
+      },
+      select: {
+        userId: true
+      }
+    })
+    console.log(postUser)
     const newComment = await prisma.comments.create({
       data: {
         postId,
         content: text,
-        userId: Number(requestBodyUserId)
+        userId: Number(requestBodyUserId),
+        notifications: {
+          create: {
+            actorId: Number(requestBodyUserId),
+            userId: postUser.userId,
+            postId,
+            type: 'NEW_COMMENT'
+          }
+        }
       }
     })
 
@@ -41,7 +58,7 @@ export async function POST (req) {
 
     pusher.trigger('notifications-channel', 'new-notification', {
       postId: Number(postId),
-      userId: Number(requestBodyUserId)
+      userId: Number(postUser.userId)
     })
     return NextResponse.json({ message: 'comment published', ok: true, commentId: newComment.id, userNick: userNick.nickName }, { status: 201 })
   } catch (error) {
@@ -98,8 +115,8 @@ export async function GET (req) {
     const { searchParams } = new URL(req.url)
     const postId = parseInt(searchParams.get('postId')) || null
     const page = parseInt(searchParams.get('page')) || 1
-    const limit = parseInt(searchParams.get('limit')) || 10
-    const offset = (page - 1) * limit
+    const limit = parseInt(searchParams.get('limit')) || 5
+    const offset = (page === 2) ? 2 : (page - 1) * limit
 
     if (!postId) return NextResponse.json({ error: 'post id needed' }, { status: 401 })
 

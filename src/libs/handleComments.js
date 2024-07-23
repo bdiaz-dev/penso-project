@@ -1,5 +1,5 @@
 const getComments = async ({ page, postId }) => {
-  const res = await fetch(`/api/comment?postId=${postId}&page=${page}&limit=2`)
+  const res = await fetch(`/api/comment?postId=${postId}&page=${page}&limit=5`)
   const comments = await res.json()
   return comments
 }

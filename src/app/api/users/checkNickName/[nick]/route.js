@@ -2,9 +2,14 @@ import { prisma } from '@/libs/prisma'
 import { NextResponse } from 'next/server'
 
 export async function GET (request, { params }) {
-  const res = await prisma.users.findUnique({
+  const { nick } = params
+  console.log(nick)
+  const res = await prisma.users.findFirst({
     where: {
-      nickName: params.nick
+      nickName: {
+        equals: nick,
+        mode: 'insensitive'
+      }
     }
   })
   if (res) {

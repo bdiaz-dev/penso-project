@@ -8,6 +8,7 @@ import { useEffect, useState } from 'react'
 import { getPusherJsInstance } from '@/libs/pusher'
 import getNick from '@/libs/getNick'
 import NotificationBell from './NotificationBell'
+import SearchButton from './NavBar/SearchButton'
 
 export default function NavBar () {
   const { data: session } = useSession()
@@ -15,6 +16,7 @@ export default function NavBar () {
   const [postedToday, setPostedToday] = useState(false)
   const [nick, setNick] = useState(null)
   const [isShowingMenu, setIsShowingMenu] = useState(false)
+  const [isShowingPostedMessage, setIsShowingPostedMessage] = useState(false)
 
   useEffect(() => {
     if (!session) return
@@ -62,32 +64,35 @@ export default function NavBar () {
         PensoProject
       </b>
       <ul
-        className={`bg-slate-700 text-white p-2 fixed top-20 ${isShowingMenu ? 'right-4' : 'left-full'}`}
+        className={`flex flex-col gap-2 bg-slate-700 text-white p-2 fixed top-20 ${isShowingMenu ? 'right-4' : 'left-full'}`}
         onMouseLeave={() => setIsShowingMenu(false)}>
-        <li>
+        <li className='rounded border-2 px-2 py-1 hover:bg-blue-600'>
           <Link href={`/user/${nick}`} onClick={() => setIsShowingMenu(false)}>
             Profile
           </Link>
         </li>
-        <li>
+        <li className='rounded border-2 px-2 py-1 hover:bg-blue-600'>
           <Link href={'/myPins'} onClick={() => setIsShowingMenu(false)}>
             My Pins
           </Link>
         </li>
         <li>
           <button onClick={async () => { await signOut({ callbackUrl: '/' }); setIsShowingMenu(false) }}
-            className='bg-blue-700 px-5 py-2 rounded'>
+            className='bg-red-600 hover:bg-red-800 px-5 py-2 rounded'>
             Log Out
           </button>
         </li>
       </ul>
       <ul
-        className='bg-slate-500 flex justify-center items-center px-5 py-3 text-xl font-bold gap-4'
+        className='bg-slate-500 min-h-12 flex justify-center items-center px-5 py-3 text-xl font-bold gap-4'
       >
-        <li
-          className='hover:underline'>
-          <Link href={session ? '/wall' : '/'}>🏠</Link>
-        </li>
+        {/* --- Home Button --- */}
+        {
+          userId &&
+          <li>
+            <Link href={session ? '/wall' : '/'}>🏠</Link>
+          </li>}
+        {/* ------ */}
 
         {/* --- Write Button --- */}
         {
@@ -95,7 +100,16 @@ export default function NavBar () {
           <li>
             {
               postedToday
-                ? <b>✅</b>
+                ? <div>
+                  <b
+                    onMouseLeave={() => { setIsShowingPostedMessage(false) }}
+                    onMouseOver={() => { setIsShowingPostedMessage(true) }}>
+                    ✅</b>
+                  {
+                    isShowingPostedMessage &&
+                    <div className='absolute top-12 p-1 px-2 bg-blue-500 rounded text-base'>You already posted today</div>
+                  }
+                </div>
                 : <Link href={'/write'}>📝</Link>
             }
           </li>
@@ -107,6 +121,13 @@ export default function NavBar () {
           </li>
         }
         {/* --- --- */}
+        {/* Search Users */}
+        {
+          userId &&
+          <li>
+            <SearchButton />
+          </li>
+        }
 
         <div
           className=' flex gap-x-2 absolute right-4'

@@ -30,7 +30,6 @@ export default function NotificationBell ({ userId }) {
   const notifys = useCallback(async () => {
     if (!userId) return
     const n = await getNotifications({ userId })
-    console.log(n)
     const l = await n.length
     setNotifications(n)
     setNoReadedNotifications(l)
@@ -67,18 +66,13 @@ export default function NotificationBell ({ userId }) {
   }, [userId, notifys])
 
   return (
-    <div>
-      <b
-        onClick={() => {
-          setShowingNotifications(!showingNotifications)
-        }}
-      >
-        🔔</b>
-      <b className='text-sm absolute text-yellow-500'>{`${noReadedNotifications > 0 ? noReadedNotifications : ' '}`}</b>
+    <div className=''>
+      <b className='cursor-pointer' onClick={() => { setShowingNotifications(!showingNotifications) }}>🔔</b>
+      <b className={`text-sm absolute text-white rounded-full {${noReadedNotifications > 0 ? 'border' : ' '}} px-1.5 bg-red-600`}>{`${noReadedNotifications > 0 ? noReadedNotifications : ' '}`}</b>
       {
         notifications && showingNotifications &&
         <ul
-          className='flex flex-col gap-2 text-sm bg-blue-400 rounded p-2 absolute top-20 right-10'
+          className='absolute flex flex-col gap-2 text-sm bg-blue-400 rounded p-2'
           onMouseLeave={() => {
             setShowingNotifications(false)
           }}
@@ -88,18 +82,20 @@ export default function NotificationBell ({ userId }) {
               ? notifications.map((n) => {
                 return (
                   <li
-                    className='bg-blue-800 flex gap-2 justify-center items-center p-2'
+                    className='bg-blue-800 flex flex-row gap-2 whitespace-nowrap justify-between items-center p-2 w-full flex-grow relative'
                     key={n.id}>
-                    <Image
-                      className='rounded-full'
-                      src={n.actor.avatar}
-                      alt='🙂'
-                      width={30}
-                      height={30}
-                    />
+                    <div className='flex-shrink-0'>
+                      <Image
+                        className='rounded-full'
+                        src={n.actor.avatar}
+                        alt='🙂'
+                        width={30}
+                        height={30}
+                      />
+                    </div>
 
                     <Link
-                      className='flex justify-center items-center gap-2'
+                      className='flex flex-grow justify-between items-center gap-2 flex-shrink-0'
                       onClick={() => {
                         handleReaded({ userId, notificationId: n.id })
                         setShowingNotifications(false)
@@ -108,7 +104,10 @@ export default function NotificationBell ({ userId }) {
                       <span>{text[n.type]}</span>
                     </Link>
 
-                    <span onClick={() => { handleReaded({ userId, notificationId: n.id }) }}>{'❌'}</span>
+                    <div className='flex-shrink-0 cursor-pointer' onClick={() => { handleReaded({ userId, notificationId: n.id }) }}>{'❌'}</div>
+                    {/* <div>
+                      .......
+                    </div> */}
                   </li>
                 )
               })

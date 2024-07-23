@@ -31,7 +31,6 @@ export default function Comments ({ postId, initialComments, commentsCount }) {
       setHasMore(false)
     } else {
       if (data?.comments?.length === 0) {
-        console.log('x')
         setHasMore(false)
       } else {
         setComments((prevComments) => {
@@ -47,7 +46,6 @@ export default function Comments ({ postId, initialComments, commentsCount }) {
 
   useEffect(() => {
     if (comments.length === commentsCount) {
-      console.log('final')
       setHasMore(false)
     }
   }, [comments, commentsCount])
@@ -96,42 +94,49 @@ export default function Comments ({ postId, initialComments, commentsCount }) {
 
   return (
     <div className='w-5/6 border-l-2 border-white p-4'>
-      <div className='flex flex-row gap-2 items-center mb-2'>
+      <div className='flex flex-row gap-2 items-center mb-6'>
         <h2
-          className='text-xl'>
+          className='text-xl italic text-slate-300'>
           {
             count > 0
               ? `💬 (${count})`
               : 'Nobody commented. Be first'
           }
         </h2>
-        <button
-          title='Write new comment'
-          className='rounded border-2 border-blue-200 hover:bg-blue-600 p-1 justify-center'
-          onClick={() => { setIsWriting((prevSt) => !prevSt) }}>
-          {
-            isWriting
-              ? '❌'
-              : '➕'
-          }
-        </button>
+        {
+          !isWriting
+            ? <button
+              title='Write new comment'
+              className='rounded border-2 border-blue-200 hover:bg-blue-600 px-2 justify-center'
+              onClick={() => { setIsWriting(true) }}>
+              ➕ New comment
+            </button>
+            : <></>
+        }
       </div>
       <div className='flex flex-row justify-center'>
 
       </div>
       {
         isWriting &&
-        <form>
+        <form className='py-4'>
           <textarea
-            className='text-black p-2'
+            className='text-black p-2 w-5/6 rounded'
             onChange={(e) => { setNewCommentFormText(e.target.value) }}
             value={newCommentFormText}
             rows={3} id='commentTextArea' />
-          <button
-            onClick={(e) => { handleNewComment(e) }}
-            className='p-1 rounded bg-green-800 hover:bg-green-600'>
-            💾
-          </button>
+          <div className='flex flex-row gap-2 '>
+            <button
+              onClick={(e) => { handleNewComment(e) }}
+              className='p-1 px-2 rounded border-2 border-white bg-blue-600 hover:bg-blue-800'>
+              💾 Save
+            </button>
+            <button
+              onClick={() => setIsWriting(false)}
+              className='p-1 px-2 rounded border-2 border-white hover:bg-blue-800'>
+              ❌ Cancel
+            </button>
+          </div>
         </form>}
 
       <div>

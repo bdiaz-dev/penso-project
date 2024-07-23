@@ -27,18 +27,18 @@ export default function Bio ({ user, canEdit }) {
       {
         bio
           ? <div className={
-            `flex flex-col justify-center items-center ${isEditing
+            `relative m-auto flex flex-col justify-center items-center max-w-96 ${isEditing
               ? 'hidden'
               : 'block'}`}>
             <div
               className='bg-slate-400 p-2 rounded'>
               {bio}
-            </div>
             <button
               onClick={() => setIsEditing(true)}
-              className='bg-blue-400 hover:bg-blue-600 rounded-full mt-2 p-2'>
+              className='absolute top-[-30px] right-[-20px] bg-blue-400 hover:bg-blue-600 rounded-full mt-2 p-2'>
               ✍
             </button>
+            </div>
           </div>
           : canEdit &&
           <div className='flex justify-center m-4'>
