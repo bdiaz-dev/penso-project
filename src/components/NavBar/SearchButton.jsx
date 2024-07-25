@@ -1,7 +1,6 @@
 'use client'
 
 import { useEffect, useRef, useState } from 'react'
-import getSearch from '@/libs/handleSearch'
 import { debounce } from 'lodash'
 import Image from 'next/image'
 import Link from 'next/link'
@@ -19,7 +18,7 @@ export default function SearchButton () {
 
   useEffect(() => {
     setSearchResults(null)
-    if (searchText.length < 3) return
+    if (searchText.length < 1) return
     const fetchSearch = debounce((inputValue) => {
       fetch(`/api/search?input=${inputValue}`)
         .then((res) => res.json())
@@ -53,13 +52,14 @@ export default function SearchButton () {
               onChange={(e) => { setSearchText(e.target.value) }} />
             <button className='text-sm p-1' onClick={handleCancel}>❌</button>
             {
-              searchResults && (searchResults.users.length > 0 || searchResults.hashtags > 0) &&
+              searchResults &&
               <div className='absolute top-11 bg-slate-700 text-white rounded flex flex-row gap-4'>
 
                 {/* Users search result */}
-                <ul className='flex flex-col gap-1'>
-                  {
-                    searchResults.users.map((user) => (
+                {searchResults?.users?.length > 0 &&
+                  <ul className='flex flex-col gap-1 mb-2'>
+                    <h2 className='text-center underline'>Users</h2>
+                    {searchResults.users.map((user) => (
                       <Link key={user.nickName} className='p-2 flex flex-row gap-4 items-center justify-between text-sm hover:bg-blue-600 cursor-pointer rounded'
                         href={`/user/${user.nickName}`}
                         onClick={handleCancel}>
@@ -76,26 +76,24 @@ export default function SearchButton () {
                           <p>{`👁‍🗨 ${user._count.followers}`}</p>
                           <p>{`🔥 ${user.streakCount}`}</p>
                         </div>
-                      </Link>
-                    ))
-                  }
-                </ul>
+                      </Link>))}
+                  </ul>
+                }
 
                 {/* Hashtags search result */}
-                <ul className='flex flex-col gap-1'>
-                  {
-                    searchResults.hashtags.map((tag) => (
-                      <Link key={tag.tag} className='p-2 flex flex-row gap-4 items-center justify-between text-sm hover:bg-blue-600 cursor-pointer rounded'
+                  {searchResults?.hashtags?.length > 0 &&
+                <ul className={`flex flex-col gap-1 mb-2 ${searchResults?.users.length > 0 && 'border-l-2'}`}>
+                  <h2 className='text-center underline'>Hashtags</h2>
+                    {searchResults.hashtags.map((tag) => (
+                      <Link key={tag.tag} className='mx-4 p-2 flex flex-row gap-4 items-center text-sm hover:bg-blue-600 cursor-pointer rounded'
                         href={`/searchByTag/${tag.tag}`}
                         onClick={handleCancel}>
-                        <div className='flex flex-row gap-1'>
-                          <p>{tag.tag}</p>
-                          <p>{`${tag._count.posts}`}</p>
+                        <div className='flex flex-row gap-4 items-center justify-between flex-grow'>
+                          <b>{tag.tag}</b>
+                          <b>{`${tag._count.posts}`}</b>
                         </div>
-                      </Link>
-                    ))
-                  }
-                </ul>
+                      </Link>))}
+                </ul>}
               </div>
             }
           </div>
